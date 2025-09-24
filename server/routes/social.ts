@@ -1,0 +1,87 @@
+import { RequestHandler } from "express";
+import { SocialPost, SocialResponse } from "@shared/api";
+
+const hazardKeywords = [
+  "tsunami",
+  "earthquake",
+  "quake",
+  "flood",
+  "flooding",
+  "high waves",
+  "rip current",
+  "storm surge",
+  "oil spill",
+  "debris",
+  "cyclone",
+  "hurricane",
+  "typhoon",
+];
+
+// Tiny sentiment lexicon for prototype
+const positive = ["safe", "calm", "clear", "ok", "fine", "mild"];
+const negative = [
+  "danger",
+  "scary",
+  "bad",
+  "worse",
+  "worst",
+  "hazard",
+  "alert",
+  "warning",
+  "evacuate",
+  "rough",
+  "strong",
+  "huge",
+  "massive",
+  "deadly",
+];
+
+function analyze(text: string) {
+  const lower = text.toLowerCase();
+  const keywords = hazardKeywords.filter((k) => lower.includes(k));
+  let score = 0;
+  for (const w of positive) if (lower.includes(w)) score += 1;
+  for (const w of negative) if (lower.includes(w)) score -= 1;
+  const sentiment: SocialPost["sentiment"] =
+    score > 0 ? "positive" : score < 0 ? "negative" : "neutral";
+  return { keywords, sentiment };
+}
+
+// In-memory rotating sample
+const samples = [
+  "Huge waves near the pier, stay safe! #ocean",
+  "Oil spill reported south beach area, strong smell",
+  "Calm waters today despite yesterday's storm",
+  "Rip current warning signs posted by lifeguards",
+  "Flooding in the marina parking lot after high tide",
+  "Tsunami alert false alarm, everything is ok now",
+];
+
+export const listSocial: RequestHandler = (req, res) => {
+  const q = String(req.query.q || "").toLowerCase();
+  const now = Date.now();
+  const items: SocialPost[] = samples
+    .map((text, i) => {
+      const { keywords, sentiment } = analyze(text);
+      return {
+        id: `${now}-${i}`,
+        platform: i % 2 === 0 ? "twitter" : "reddit",
+        text,
+        createdAt: new Date(now - i * 60_000).toISOString(),
+        user: i % 2 === 0 ? "@coastwatch" : "u/seaScope",
+        location:
+          i % 3 === 0
+            ? {
+                lat: 37.7749 + Math.random() * 0.1,
+                lng: -122.4194 + Math.random() * 0.1,
+              }
+            : null,
+        keywords,
+        sentiment,
+      } satisfies SocialPost;
+    })
+    .filter((p) => !q || p.text.toLowerCase().includes(q));
+
+  const response: SocialResponse = { items };
+  res.json(response);
+};
