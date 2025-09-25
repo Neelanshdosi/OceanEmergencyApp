@@ -17,42 +17,44 @@ export const SocialFeed: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<EnhancedSocialPost | null>(null);
   const [showMap, setShowMap] = useState(false);
 
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch(`/api/social?q=${encodeURIComponent(q)}`);
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+      const json = await res.json();
+      setItems(json.items as EnhancedSocialPost[]);
+    } catch (error) {
+      console.error('Error fetching social posts:', error);
+      // Fallback to simulated data
+      setItems([
+        {
+          id: '1',
+          platform: 'twitter',
+          text: 'Massive waves hitting the coast! Stay safe everyone! #OceanEmergency #TsunamiWarning',
+          keywords: ['waves', 'coast', 'tsunami', 'emergency'],
+          sentiment: 'negative',
+          createdAt: new Date().toISOString(),
+          location: { lat: 37.7749, lng: -122.4194 },
+          user: '@coastguard_official',
+          url: 'https://twitter.com/example/status/123'
+        },
+        {
+          id: '2',
+          platform: 'reddit',
+          text: 'Just witnessed an incredible storm surge in Miami. The ocean is really showing its power today.',
+          keywords: ['storm', 'surge', 'miami', 'ocean'],
+          sentiment: 'neutral',
+          createdAt: new Date(Date.now() - 3600000).toISOString(),
+          location: { lat: 25.7617, lng: -80.1918 },
+          user: 'u/stormwatcher',
+          url: 'https://reddit.com/r/miami/comments/123'
+        }
+      ]);
+    }
+  };
+
   useEffect(() => {
-    const run = async () => {
-      try {
-        const res = await fetch(`/api/social?q=${encodeURIComponent(q)}`);
-        const json = await res.json();
-        setItems(json.items as EnhancedSocialPost[]);
-      } catch (error) {
-        console.error('Error fetching social posts:', error);
-        // Fallback to simulated data
-        setItems([
-          {
-            id: '1',
-            platform: 'twitter',
-            text: 'Massive waves hitting the coast! Stay safe everyone! #OceanEmergency #TsunamiWarning',
-            keywords: ['waves', 'coast', 'tsunami', 'emergency'],
-            sentiment: 'negative',
-            createdAt: new Date().toISOString(),
-            location: { lat: 37.7749, lng: -122.4194 },
-            user: '@coastguard_official',
-            url: 'https://twitter.com/example/status/123'
-          },
-          {
-            id: '2',
-            platform: 'reddit',
-            text: 'Just witnessed an incredible storm surge in Miami. The ocean is really showing its power today.',
-            keywords: ['storm', 'surge', 'miami', 'ocean'],
-            sentiment: 'neutral',
-            createdAt: new Date(Date.now() - 3600000).toISOString(),
-            location: { lat: 25.7617, lng: -80.1918 },
-            user: 'u/stormwatcher',
-            url: 'https://reddit.com/r/miami/comments/123'
-          }
-        ]);
-      }
-    };
-    run();
+    fetchPosts();
   }, [q]);
 
   const handlePostClick = (post: EnhancedSocialPost) => {
