@@ -132,7 +132,25 @@ export const searchOceanEmergencyTweets: RequestHandler = async (req, res) => {
 export const getOceanEmergencySocialFeed: RequestHandler = async (req, res) => {
   try {
     const { location, max_results = 20 } = req.query;
-    
+
+    // If rate-limited, return fallback
+    const now = Math.floor(Date.now() / 1000);
+    if (twitterRateLimitedUntil && now < twitterRateLimitedUntil) {
+      console.warn('Twitter API rate-limited, returning fallback social feed');
+      const items = makeFallbackSocial(location as string | undefined).map((it, i) => ({
+        id: it.id,
+        platform: it.platform as any,
+        text: it.text,
+        createdAt: it.createdAt,
+        user: it.user,
+        location: it.location,
+        keywords: it.keywords,
+        sentiment: it.sentiment as any,
+      }));
+      const result: SocialResponse = { items };
+      return res.json(result);
+    }
+
     const twitterService = getTwitterServiceOrRespond(res);
     if (!twitterService) return;
 
@@ -151,8 +169,24 @@ export const getOceanEmergencySocialFeed: RequestHandler = async (req, res) => {
     };
 
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get ocean emergency social feed error:', error);
+    if (error && (error.code === 429 || error?.type === 'response' && error?.code === 429)) {
+      const reset = error?.headers?.['x-rate-limit-reset'] ? parseInt(error.headers['x-rate-limit-reset'], 10) : null;
+      if (reset) twitterRateLimitedUntil = reset; else twitterRateLimitedUntil = Math.floor(Date.now() / 1000) + 60;
+      const items = makeFallbackSocial(req.query.location as string | undefined).map((it:any) => ({
+        id: it.id,
+        platform: it.platform as any,
+        text: it.text,
+        createdAt: it.createdAt,
+        user: it.user,
+        location: it.location,
+        keywords: it.keywords,
+        sentiment: it.sentiment as any,
+      }));
+      return res.json({ items } as SocialResponse);
+    }
+
     res.status(500).json({ error: 'Failed to get ocean emergency social feed' });
   }
 };
