@@ -79,9 +79,24 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
 export const MapView: React.FC<{
   reports?: Report[];
   socialPins?: SocialMediaPin[];
-  center?: [number, number];
+  defaultCenter?: [number, number];
+  defaultZoom?: number;
+  minZoom?: number;
+  maxZoom?: number;
+  bounds?: [[number, number], [number, number]];
+  maxBoundsViscosity?: number;
   onMapClick?: (lat: number, lng: number) => void;
-}> = ({ reports = [], socialPins = [], center = [20, 0], onMapClick }) => {
+}> = ({
+  reports = [],
+  socialPins = [],
+  defaultCenter = [20, 0],
+  defaultZoom = 3,
+  minZoom = 2,
+  maxZoom = 18,
+  bounds,
+  maxBoundsViscosity = 0.8,
+  onMapClick,
+}) => {
   const safeReports = Array.isArray(reports) ? reports : [];
   const points: [number, number, number?][] = safeReports
     .filter((r) => typeof r.latitude === 'number' && typeof r.longitude === 'number')
