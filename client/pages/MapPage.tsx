@@ -1,4 +1,3 @@
-import React, { Suspense, useEffect } from 'react';
 import React, { Suspense, useEffect, useState } from 'react';
 import { MapView } from '@/components/MapView';
 import { useMapContext } from '@/context/MapContext';
