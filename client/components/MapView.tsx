@@ -60,7 +60,7 @@ function HeatCanvasTweaks() {
 
 function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
   const map = useMap();
-  
+
   useEffect(() => {
     if (onMapClick) {
       const handleClick = (e: any) => {
@@ -72,8 +72,26 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
       };
     }
   }, [map, onMapClick]);
-  
+
   return null;
+}
+
+function SearchMarker({ location }: { location: { lat:number, lng:number, display_name?: string } }){
+  const map = useMap();
+  useEffect(()=>{
+    map.setView([location.lat, location.lng], Math.max(map.getZoom(), 8));
+  },[location.lat, location.lng, map]);
+
+  return (
+    <Marker position={[location.lat, location.lng]}>
+      <Popup>
+        <div className="max-w-xs">
+          <div className="font-medium">{location.display_name || 'Search result'}</div>
+          <div className="text-xs text-muted-foreground">lat {location.lat.toFixed(4)} · lng {location.lng.toFixed(4)}</div>
+        </div>
+      </Popup>
+    </Marker>
+  );
 }
 
 export const MapView: React.FC<{
