@@ -77,16 +77,15 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
 }
 
 export const MapView: React.FC<{
-  reports: Report[];
+  reports?: Report[];
   socialPins?: SocialMediaPin[];
   center?: [number, number];
   onMapClick?: (lat: number, lng: number) => void;
-}> = ({ reports, socialPins = [], center = [20, 0], onMapClick }) => {
-  const points: [number, number, number?][] = reports.map((r) => [
-    r.latitude,
-    r.longitude,
-    0.6,
-  ]);
+}> = ({ reports = [], socialPins = [], center = [20, 0], onMapClick }) => {
+  const safeReports = Array.isArray(reports) ? reports : [];
+  const points: [number, number, number?][] = safeReports
+    .filter((r) => typeof r.latitude === 'number' && typeof r.longitude === 'number')
+    .map((r) => [r.latitude, r.longitude, 0.6]);
   return (
     <MapContainer
       center={center}
