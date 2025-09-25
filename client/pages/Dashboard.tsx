@@ -104,7 +104,7 @@ export default function Dashboard() {
           <div className="rounded-lg border bg-card p-4">
             <h3 className="mb-3 text-lg font-semibold">Recent Alerts</h3>
             <div className="space-y-2">
-              {reports.map((r) => (
+              {(safeReports).map((r) => (
                 <div key={r.id} className="flex items-start justify-between gap-2 rounded-lg border p-2">
                   <div>
                     <div className="text-sm font-medium">{r.title}</div>
