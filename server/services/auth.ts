@@ -182,8 +182,22 @@ export class AuthService {
   }
 
   async getUserById(id: string): Promise<User | null> {
-    const userDoc = await this.db.collection(this.usersCollection).doc(id).get();
-    
+    if (this.useMemory || !this.db) {
+      const found = this.inMemoryUsers.find((u:any) => u.id === id);
+      if (!found) return null;
+      return {
+        id: found.id,
+        email: found.email,
+        name: found.name,
+        role: found.role,
+        avatar: found.avatar,
+        createdAt: found.createdAt,
+        lastLoginAt: found.lastLoginAt,
+      };
+    }
+
+    const userDoc = await this.db!.collection(this.usersCollection).doc(id).get();
+
     if (!userDoc.exists) {
       return null;
     }
