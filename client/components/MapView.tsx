@@ -121,9 +121,15 @@ export const MapView: React.FC<{
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <HeatLayer points={points} />
+          <HeatLayer points={points} />
       <HeatCanvasTweaks />
       <MapClickHandler onMapClick={onMapClick} />
+
+      {/* search / selected marker */}
+      {selectedSearchLocation && (
+        <SearchMarker location={selectedSearchLocation} />
+      )}
+
       {reports.map((r) => (
         <Marker key={r.id} position={[r.latitude, r.longitude]}>
           <Popup>
@@ -173,7 +179,7 @@ export const MapView: React.FC<{
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-lg">
-                  {pin.platform === 'twitter' ? '🐦' : pin.platform === 'reddit' ? '����' : '📱'}
+                  {pin.platform === 'twitter' ? '🐦' : pin.platform === 'reddit' ? '🔴' : '📱'}
                 </span>
                 <span className="font-semibold text-sm">{pin.user}</span>
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
