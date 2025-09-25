@@ -135,9 +135,11 @@ export const MapView: React.FC<{
         </Marker>
       ))}
       
-      {socialPins.map((pin) => (
-        <Marker 
-          key={`social-${pin.id}`} 
+      {socialPins
+        .filter(pin => pin && pin.location && typeof pin.location.lat === 'number' && typeof pin.location.lng === 'number')
+        .map((pin) => (
+        <Marker
+          key={`social-${pin.id}`}
           position={[pin.location.lat, pin.location.lng]}
           icon={L.divIcon({
             className: 'social-pin',
@@ -159,21 +161,21 @@ export const MapView: React.FC<{
               </div>
               <p className="text-sm max-w-[220px]">{pin.text}</p>
               <div className="flex flex-wrap gap-1">
-                {pin.keywords.map((keyword) => (
+                {(pin.keywords || []).map((keyword) => (
                   <span key={keyword} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
                     #{keyword}
                   </span>
                 ))}
               </div>
               <div className="text-xs text-muted-foreground">
-                {new Date(pin.createdAt).toLocaleString()}
+                {pin.createdAt ? new Date(pin.createdAt).toLocaleString() : ''}
               </div>
               <div className={`text-xs px-2 py-1 rounded ${
                 pin.sentiment === 'negative' ? 'bg-red-100 text-red-800' :
                 pin.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
                 'bg-gray-100 text-gray-800'
               }`}>
-                Sentiment: {pin.sentiment}
+                Sentiment: {pin.sentiment || 'neutral'}
               </div>
             </div>
           </Popup>
