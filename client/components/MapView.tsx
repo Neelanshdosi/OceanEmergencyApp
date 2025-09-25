@@ -108,8 +108,8 @@ export const MapView: React.FC<{
 }> = ({
   reports = [],
   socialPins = [],
-  defaultCenter = [20, 0],
-  defaultZoom = 3,
+  defaultCenter = [22.5937, 78.9629],
+  defaultZoom = 5,
   minZoom = 2,
   maxZoom = 18,
   bounds,
