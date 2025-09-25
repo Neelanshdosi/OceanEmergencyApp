@@ -3,6 +3,7 @@ import type { Report } from "@shared/api";
 import { ReportForm } from "@/components/ReportForm";
 import { MapView } from "@/components/MapView";
 import { SocialFeed } from "@/components/SocialFeed";
+import { INDIA_CENTER } from '@/lib/region';
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
