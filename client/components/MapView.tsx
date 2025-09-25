@@ -103,13 +103,17 @@ export const MapView: React.FC<{
     .map((r) => [r.latitude, r.longitude, 0.6]);
   return (
     <MapContainer
-      center={center}
-      zoom={3}
+      center={defaultCenter}
+      zoom={defaultZoom}
+      minZoom={minZoom}
+      maxZoom={maxZoom}
       scrollWheelZoom
       className="h-full w-full rounded-lg border relative z-10"
       whenReady={() => {
         // Map is ready, we'll set up click handler in useEffect
       }}
+      maxBounds={bounds}
+      maxBoundsViscosity={bounds ? maxBoundsViscosity : undefined}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
