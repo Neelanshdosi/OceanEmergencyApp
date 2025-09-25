@@ -20,6 +20,37 @@ function getTwitterServiceOrRespond(res: any) {
 /**
  * Search for tweets with custom query
  */
+let twitterRateLimitedUntil = 0; // epoch seconds - simple in-memory cooldown
+
+function makeFallbackSocial(query?: string) {
+  // Simple India-focused fallback posts generator
+  const now = Date.now();
+  const texts = [
+    'Huge waves reported near Chennai Marina, people advised to stay away from the shore',
+    'Oil spill sighted off the coast of Goa, strong smell in nearby beaches',
+    'Calm waters today at Kovalam despite yesterday\'s storm',
+    'Rip current warning near Puri beach reported by locals',
+    'Flooding reported in Mumbai\'s coastal road after high tide',
+    'Tsunami alert tested — no casualties reported along Andaman and Nicobar islands',
+  ];
+
+  const items = texts
+    .map((t, i) => ({
+      id: `fallback-${now}-${i}`,
+      platform: i % 2 === 0 ? 'twitter' : 'reddit',
+      text: t,
+      createdAt: new Date(now - i * 60000).toISOString(),
+      user: i % 2 === 0 ? '@coastwatch' : 'u/seaScope',
+      location: i % 3 === 0 ? { lat: 19.076 + Math.random() * 0.05, lng: 72.8777 + Math.random() * 0.05 } : null,
+      keywords: [],
+      sentiment: 'neutral',
+    }));
+
+  if (!query) return items;
+  const q = String(query).toLowerCase();
+  return items.filter(p => p.text.toLowerCase().includes(q));
+}
+
 export const searchTweets: RequestHandler = async (req, res) => {
   try {
     const {
@@ -36,6 +67,14 @@ export const searchTweets: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
+    // If we're currently rate-limited, immediately return fallback
+    const now = Math.floor(Date.now() / 1000);
+    if (twitterRateLimitedUntil && now < twitterRateLimitedUntil) {
+      console.warn('Twitter API rate-limited, returning fallback data until', twitterRateLimitedUntil);
+      const items = makeFallbackSocial(query);
+      return res.json({ data: items, includes: {}, meta: { fallback: true } } as TwitterSearchResponse);
+    }
+
     const params: TwitterSearchParams = {
       query,
       max_results: parseInt(max_results as string) || 10,
@@ -50,8 +89,18 @@ export const searchTweets: RequestHandler = async (req, res) => {
     if (!twitterService) return;
     const result: TwitterSearchResponse = await twitterService.searchTweets(params);
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Search tweets error:', error);
+    // Detect rate-limit (twitter-api-v2 throws ApiResponseError with code)
+    if (error && error.code === 429 || error?.type === 'response' && error?.code === 429) {
+      const reset = error?.headers?.['x-rate-limit-reset'] ? parseInt(error.headers['x-rate-limit-reset'], 10) : null;
+      if (reset) twitterRateLimitedUntil = reset;
+      else twitterRateLimitedUntil = Math.floor(Date.now() / 1000) + 60; // 1 minute fallback
+
+      const items = makeFallbackSocial(req.query.query as string | undefined);
+      return res.status(200).json({ data: items, includes: {}, meta: { fallback: true, reason: 'rate_limited' } } as any);
+    }
+
     res.status(500).json({ error: 'Failed to search tweets' });
   }
 };
