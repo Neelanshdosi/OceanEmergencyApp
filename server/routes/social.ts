@@ -69,7 +69,15 @@ export const listSocial: RequestHandler = (req, res) => {
         text,
         createdAt: new Date(now - i * 60_000).toISOString(),
         user: i % 2 === 0 ? "@coastwatch" : "u/seaScope",
-        location: i % 3 === 0 ? { lat: 37.7749 + Math.random() * 0.1, lng: -122.4194 + Math.random() * 0.1 } : null,
+        // Choose an India-based location for some posts
+        location: i % 3 === 0 ? [
+          { lat: 19.0760 + Math.random() * 0.05, lng: 72.8777 + Math.random() * 0.05 }, // Mumbai
+          { lat: 13.0827 + Math.random() * 0.05, lng: 80.2707 + Math.random() * 0.05 }, // Chennai
+          { lat: 15.2993 + Math.random() * 0.05, lng: 74.1240 + Math.random() * 0.05 }, // Goa
+          { lat: 19.8135 + Math.random() * 0.05, lng: 85.8312 + Math.random() * 0.05 }, // Puri
+          { lat: 8.5241 + Math.random() * 0.05, lng: 76.9366 + Math.random() * 0.05 }, // Kovalam
+          { lat: 11.7401 + Math.random() * 0.05, lng: 92.6586 + Math.random() * 0.05 }, // Andaman
+        ][Math.floor(Math.random()*6)] : null,
         keywords,
         sentiment,
       } satisfies SocialPost;
