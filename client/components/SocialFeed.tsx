@@ -107,7 +107,7 @@ export const SocialFeed: React.FC = () => {
               className="flex-1 rounded-md border px-3 py-2 text-sm"
               placeholder="Search for ocean emergency keywords..."
             />
-            <Button size="sm" onClick={() => setItems([...items])}>
+            <Button size="sm" onClick={() => fetchPosts()}>
               Search
             </Button>
           </div>
