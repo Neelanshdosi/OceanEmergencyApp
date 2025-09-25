@@ -225,41 +225,66 @@ export class AuthService {
 
   async googleAuth(email: string, name: string, picture?: string): Promise<AuthResponse> {
     let user = await this.getUserByEmail(email);
-    
+
     if (!user) {
       // Create new user with Google account
       const now = new Date().toISOString();
-      const newUser: User = {
-        id: this.db.collection('temp').doc().id,
-        email: email,
-        name: name,
-        role: 'citizen', // Default role for Google users
-        avatar: picture,
-        createdAt: now,
-      };
 
-      // Store user in database (no password for Google users)
-      const userDoc = {
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
-        avatar: newUser.avatar || null,
-        createdAt: newUser.createdAt,
-        password: null, // No password for Google users
-      };
-      
-      await this.db.collection(this.usersCollection).doc(newUser.id).set(userDoc);
-      user = newUser;
+      if (this.useMemory || !this.db) {
+        const newUser: any = {
+          id: `mem_${Date.now()}_${Math.random()}`,
+          email,
+          name,
+          role: 'citizen',
+          avatar: picture,
+          createdAt: now,
+        };
+        const userDoc = { ...newUser, password: null };
+        this.inMemoryUsers.push(userDoc);
+        user = newUser as User;
+      } else {
+        const newUser: User = {
+          id: this.db!.collection('temp').doc().id,
+          email: email,
+          name: name,
+          role: 'citizen', // Default role for Google users
+          avatar: picture,
+          createdAt: now,
+        };
+
+        // Store user in database (no password for Google users)
+        const userDoc = {
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.name,
+          role: newUser.role,
+          avatar: newUser.avatar || null,
+          createdAt: newUser.createdAt,
+          password: null, // No password for Google users
+        };
+
+        await this.db!.collection(this.usersCollection).doc(newUser.id).set(userDoc);
+        user = newUser;
+      }
     } else {
       // Update existing user's Google info
-      await this.db.collection(this.usersCollection).doc(user.id).update({
-        avatar: picture,
-        lastLoginAt: new Date().toISOString(),
-      });
-      
-      user.avatar = picture;
-      user.lastLoginAt = new Date().toISOString();
+      if (this.useMemory || !this.db) {
+        const idx = this.inMemoryUsers.findIndex((u:any) => u.id === user!.id);
+        if (idx >= 0) {
+          this.inMemoryUsers[idx].avatar = picture;
+          this.inMemoryUsers[idx].lastLoginAt = new Date().toISOString();
+        }
+        user.avatar = picture;
+        user.lastLoginAt = new Date().toISOString();
+      } else {
+        await this.db!.collection(this.usersCollection).doc(user.id).update({
+          avatar: picture,
+          lastLoginAt: new Date().toISOString(),
+        });
+
+        user.avatar = picture;
+        user.lastLoginAt = new Date().toISOString();
+      }
     }
 
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
