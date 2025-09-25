@@ -30,7 +30,7 @@ export const Header: React.FC = () => {
             <Link to="/" className="font-extrabold tracking-tight text-ocean-800 dark:text-ocean-100">
               OceanWatch
             </Link>
-            <div className="text-xs text-muted-foreground">Marine Safety Monitoring</div>
+            <div className="text-xs text-muted-foreground">India Coastal Safety Monitoring</div>
           </div>
 
           <nav className="ml-6 hidden gap-4 md:flex">
