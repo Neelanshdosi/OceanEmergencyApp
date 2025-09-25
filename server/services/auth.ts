@@ -87,7 +87,25 @@ export class AuthService {
   }
 
   async authenticateUser(email: string, password: string): Promise<AuthResponse> {
-    const userDoc = await this.db
+    if (this.useMemory || !this.db) {
+      const found = this.inMemoryUsers.find((u:any) => u.email === email);
+      if (!found) throw new Error('Invalid email or password');
+      const isValidPassword = await bcrypt.compare(password, found.password || '');
+      if (!isValidPassword) throw new Error('Invalid email or password');
+      const user: User = {
+        id: found.id,
+        email: found.email,
+        name: found.name,
+        role: found.role,
+        avatar: found.avatar,
+        createdAt: found.createdAt,
+        lastLoginAt: new Date().toISOString(),
+      };
+      const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+      return { user, token };
+    }
+
+    const userDoc = await this.db!
       .collection(this.usersCollection)
       .where('email', '==', email)
       .limit(1)
@@ -105,7 +123,7 @@ export class AuthService {
     }
 
     // Update last login
-    await this.db.collection(this.usersCollection).doc(userData.id).update({
+    await this.db!.collection(this.usersCollection).doc(userData.id).update({
       lastLoginAt: new Date().toISOString(),
     });
 
