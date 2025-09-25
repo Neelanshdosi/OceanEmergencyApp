@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import admin from 'firebase-admin';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User, AuthRequest, AuthResponse } from '@shared/api';
@@ -6,11 +7,21 @@ import { User, AuthRequest, AuthResponse } from '@shared/api';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export class AuthService {
-  private db: admin.firestore.Firestore;
+  private db: admin.firestore.Firestore | null = null;
   private usersCollection = 'users';
+  private useMemory = false;
+  private inMemoryUsers: User[] = [];
 
   constructor() {
-    this.db = admin.firestore();
+    try {
+      this.db = admin.firestore();
+      // simple check
+      if (!this.db) throw new Error('Firestore not available');
+    } catch (err: any) {
+      console.warn('Firestore not initialized for AuthService, falling back to in-memory users:', err?.message);
+      this.db = null;
+      this.useMemory = true;
+    }
   }
 
   async createUser(userData: {
