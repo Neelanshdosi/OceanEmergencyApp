@@ -17,8 +17,60 @@ export const SocialFeed: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<EnhancedSocialPost | null>(null);
   const [showMap, setShowMap] = useState(false);
 
+  const emergencyKeywords = ['tsunami','flood','storm','wave','surge','rip','spill','debris','coastal','emergency','warning','danger'];
+
+  const mapTweetToPost = (tweet: any, users: any[] | undefined): EnhancedSocialPost => {
+    const user = users?.find((u: any) => u.id === tweet.author_id) || null;
+    const location = tweet.geo?.coordinates?.coordinates
+      ? { lat: tweet.geo.coordinates.coordinates[1], lng: tweet.geo.coordinates.coordinates[0] }
+      : tweet.geo?.place ? null : null;
+
+    const keywords = (tweet.text || '')
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((w: string) => emergencyKeywords.includes(w));
+
+    const negative = ['danger','emergency','warning','flood','damage','evacuate','tsunami','storm','surge','rip','spill','massive','huge'];
+    const positive = ['safe','calm','clear','ok','fine'];
+    const t = (tweet.text || '').toLowerCase();
+    let score = 0;
+    for (const w of negative) if (t.includes(w)) score -= 1;
+    for (const w of positive) if (t.includes(w)) score += 1;
+    const sentiment = score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral';
+
+    return {
+      id: tweet.id,
+      platform: 'twitter',
+      text: tweet.text || '',
+      createdAt: tweet.created_at || new Date().toISOString(),
+      user: user?.username || user?.name || `@${tweet.author_id}`,
+      location,
+      keywords,
+      sentiment,
+      url: tweet.id ? `https://twitter.com/i/web/status/${tweet.id}` : undefined,
+      metrics: tweet.public_metrics ? {
+        retweets: tweet.public_metrics.retweet_count,
+        likes: tweet.public_metrics.like_count,
+        replies: tweet.public_metrics.reply_count,
+      } : undefined,
+    } as EnhancedSocialPost;
+  };
+
   const fetchPosts = async () => {
     try {
+      // First try Twitter search endpoint
+      const twitterRes = await fetch(`/api/twitter/search?query=${encodeURIComponent(q)}&max_results=20`);
+      if (twitterRes.ok) {
+        const json = await twitterRes.json();
+        if (json && Array.isArray(json.data)) {
+          const users = json.includes?.users || [];
+          const posts = (json.data as any[]).map(t => mapTweetToPost(t, users));
+          setItems(posts);
+          return;
+        }
+      }
+
+      // Fallback to social endpoint (simulated or aggregated)
       const res = await fetch(`/api/social?q=${encodeURIComponent(q)}`);
       if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
       const json = await res.json();
