@@ -86,6 +86,7 @@ export const MapView: React.FC<{
   bounds?: [[number, number], [number, number]];
   maxBoundsViscosity?: number;
   onMapClick?: (lat: number, lng: number) => void;
+  selectedSearchLocation?: { lat:number, lng:number, display_name?: string } | null;
 }> = ({
   reports = [],
   socialPins = [],
@@ -96,6 +97,7 @@ export const MapView: React.FC<{
   bounds,
   maxBoundsViscosity = 0.8,
   onMapClick,
+  selectedSearchLocation = null,
 }) => {
   const safeReports = Array.isArray(reports) ? reports : [];
   const points: [number, number, number?][] = safeReports
@@ -171,7 +173,7 @@ export const MapView: React.FC<{
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-lg">
-                  {pin.platform === 'twitter' ? '🐦' : pin.platform === 'reddit' ? '🔴' : '📱'}
+                  {pin.platform === 'twitter' ? '🐦' : pin.platform === 'reddit' ? '����' : '📱'}
                 </span>
                 <span className="font-semibold text-sm">{pin.user}</span>
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
