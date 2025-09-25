@@ -52,6 +52,15 @@ export const Header: React.FC = () => {
             >
               Dashboard
             </Link>
+            <Link
+              className={cn(
+                'text-sm font-medium',
+                pathname === '/analytics' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+              )}
+              to="/analytics"
+            >
+              Analytics
+            </Link>
 
             <div className={'relative'} ref={mapMenuRef}>
               <div className={cn('inline-flex items-center gap-2 rounded px-2 py-1 cursor-pointer select-none focus:outline-none', isMapActive ? 'bg-muted-foreground/10 underline decoration-2 decoration-transparent' : '')}>
