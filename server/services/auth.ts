@@ -44,10 +44,25 @@ export class AuthService {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 12);
-    
+
     const now = new Date().toISOString();
+
+    if (this.useMemory || !this.db) {
+      const user: User = {
+        id: `mem_${Date.now()}_${Math.random()}`,
+        email: userData.email,
+        name: userData.name,
+        role: userData.role,
+        avatar: userData.avatar,
+        createdAt: now,
+      };
+      const userDoc = { ...user, password: hashedPassword } as any;
+      this.inMemoryUsers.push(userDoc as any);
+      return user;
+    }
+
     const user: User = {
-      id: this.db.collection('temp').doc().id,
+      id: this.db!.collection('temp').doc().id,
       email: userData.email,
       name: userData.name,
       role: userData.role,
@@ -65,8 +80,8 @@ export class AuthService {
       createdAt: user.createdAt,
       password: hashedPassword, // Store hashed password separately
     };
-    
-    await this.db.collection(this.usersCollection).doc(user.id).set(userDoc);
+
+    await this.db!.collection(this.usersCollection).doc(user.id).set(userDoc);
 
     return user;
   }
