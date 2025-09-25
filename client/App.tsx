@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import MapPage from "./pages/MapPage";
+import Analytics from "./pages/Analytics";
 import { Admin } from "./pages/Admin";
 import GoogleCallback from "./pages/GoogleCallback";
 import { AuthProvider } from "./context/AuthContext";
