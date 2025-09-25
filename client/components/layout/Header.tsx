@@ -1,30 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { AuthDialog } from "@/components/AuthDialog";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { User, LogOut } from "lucide-react";
 
 export const Header: React.FC = () => {
-  const { user, login, logout } = useAuth();
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [role, setRole] = useState<"citizen" | "analyst" | "admin">("citizen");
+  const { user, logout, loading } = useAuth();
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const { pathname } = useLocation();
 
   return (
@@ -77,67 +61,47 @@ export const Header: React.FC = () => {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          {user ? (
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+              <span className="text-sm text-muted-foreground">Loading...</span>
+            </div>
+          ) : user ? (
             <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-muted-foreground sm:inline">
-                {user.name} · {user.role}
-              </span>
+              <div className="flex items-center gap-2">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="h-6 w-6 rounded-full"
+                  />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-ocean-500 text-white text-xs font-medium">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="hidden flex-col sm:flex">
+                  <span className="text-sm font-medium">{user.name}</span>
+                  <span className="text-xs text-muted-foreground capitalize">
+                    {user.role}
+                  </span>
+                </div>
+              </div>
               <Button variant="outline" size="sm" onClick={logout}>
+                <LogOut className="h-4 w-4 mr-1" />
                 Logout
               </Button>
             </div>
           ) : (
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">Login</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Sign in (prototype)</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      placeholder="Jane Doe"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Role</Label>
-                    <Select value={role} onValueChange={(v: any) => setRole(v)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="citizen">Citizen</SelectItem>
-                        <SelectItem value="analyst">
-                          Official / Analyst
-                        </SelectItem>
-                        <SelectItem value="admin">
-                          Admin
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    className="w-full"
-                    onClick={() => {
-                      if (!name.trim()) return;
-                      login(name.trim(), role);
-                      setOpen(false);
-                    }}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button size="sm" onClick={() => setAuthDialogOpen(true)}>
+              <User className="h-4 w-4 mr-1" />
+              Sign In
+            </Button>
           )}
         </div>
       </div>
+      
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </header>
   );
 };

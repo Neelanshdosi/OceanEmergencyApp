@@ -37,7 +37,38 @@ export interface Report extends ReportInput {
   user?: { id: string; name: string; role: UserRole } | null;
 }
 
-export type UserRole = "citizen" | "analyst";
+export type UserRole = "citizen" | "analyst" | "admin";
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  avatar?: string;
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+export interface AuthRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+export interface SocialMediaPin {
+  id: string;
+  platform: "twitter" | "reddit" | "news";
+  text: string;
+  location: { lat: number; lng: number };
+  createdAt: string;
+  user: string;
+  sentiment: "negative" | "neutral" | "positive";
+  keywords: string[];
+}
 
 export interface ReportsQuery {
   type?: HazardType | "all";

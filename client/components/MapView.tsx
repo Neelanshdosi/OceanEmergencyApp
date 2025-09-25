@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
 import L from "leaflet";
-import type { Report } from "@shared/api";
+import type { Report, SocialMediaPin } from "@shared/api";
 
 // Default Leaflet marker icon fix for Vite bundling
 const DefaultIcon = L.icon({
@@ -78,9 +78,10 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
 
 export const MapView: React.FC<{
   reports: Report[];
+  socialPins?: SocialMediaPin[];
   center?: [number, number];
   onMapClick?: (lat: number, lng: number) => void;
-}> = ({ reports, center = [20, 0], onMapClick }) => {
+}> = ({ reports, socialPins = [], center = [20, 0], onMapClick }) => {
   const points: [number, number, number?][] = reports.map((r) => [
     r.latitude,
     r.longitude,
@@ -91,7 +92,7 @@ export const MapView: React.FC<{
       center={center}
       zoom={3}
       scrollWheelZoom
-      className="h-full w-full rounded-lg border"
+      className="h-full w-full rounded-lg border relative z-10"
       whenReady={() => {
         // Map is ready, we'll set up click handler in useEffect
       }}
@@ -130,6 +131,51 @@ export const MapView: React.FC<{
                     className="mt-2 h-24 w-full rounded object-cover"
                   />
                 ))}
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+      
+      {socialPins.map((pin) => (
+        <Marker 
+          key={`social-${pin.id}`} 
+          position={[pin.location.lat, pin.location.lng]}
+          icon={L.divIcon({
+            className: 'social-pin',
+            html: `<div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">📱</div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+          })}
+        >
+          <Popup>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">
+                  {pin.platform === 'twitter' ? '🐦' : pin.platform === 'reddit' ? '🔴' : '📱'}
+                </span>
+                <span className="font-semibold text-sm">{pin.user}</span>
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  {pin.platform}
+                </span>
+              </div>
+              <p className="text-sm max-w-[220px]">{pin.text}</p>
+              <div className="flex flex-wrap gap-1">
+                {pin.keywords.map((keyword) => (
+                  <span key={keyword} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                    #{keyword}
+                  </span>
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {new Date(pin.createdAt).toLocaleString()}
+              </div>
+              <div className={`text-xs px-2 py-1 rounded ${
+                pin.sentiment === 'negative' ? 'bg-red-100 text-red-800' :
+                pin.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                Sentiment: {pin.sentiment}
+              </div>
             </div>
           </Popup>
         </Marker>

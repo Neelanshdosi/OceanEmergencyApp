@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Report } from "@shared/api";
+import type { Report, SocialMediaPin } from "@shared/api";
 import { MapView } from "@/components/MapView";
 import { Filters, FiltersPanel } from "@/components/FiltersPanel";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Dashboard() {
   const { user } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
+  const [socialPins, setSocialPins] = useState<SocialMediaPin[]>([]);
   const [filters, setFilters] = useState<Filters>({
     type: "all",
     source: "all",
@@ -24,8 +25,32 @@ export default function Dashboard() {
     setReports(json.items as Report[]);
   }
 
+  async function loadSocialPins() {
+    try {
+      const res = await fetch('/api/social');
+      const json = await res.json();
+      // Convert social posts to pins for the map
+      const pins: SocialMediaPin[] = json.items
+        .filter((post: any) => post.location)
+        .map((post: any) => ({
+          id: post.id,
+          platform: post.platform,
+          text: post.text,
+          location: post.location,
+          createdAt: post.createdAt,
+          user: post.user || `@${post.platform}_user`,
+          sentiment: post.sentiment,
+          keywords: post.keywords || [],
+        }));
+      setSocialPins(pins);
+    } catch (error) {
+      console.error('Error loading social pins:', error);
+    }
+  }
+
   useEffect(() => {
     load();
+    loadSocialPins();
   }, [filters.type, filters.source, filters.verified]);
 
   async function verify(id: string) {
@@ -105,7 +130,7 @@ export default function Dashboard() {
           </Button>
         </div>
         <div className="h-[70vh] w-full">
-          <MapView reports={reports} center={center} />
+          <MapView reports={reports} socialPins={socialPins} center={center} />
         </div>
       </section>
     </main>

@@ -19,6 +19,10 @@ try {
     admin.initializeApp();
   }
   
+  // Configure Firestore to ignore undefined properties
+  const firestore = admin.firestore();
+  firestore.settings({ ignoreUndefinedProperties: true });
+  
   db = admin.firestore();
   console.log('✅ Firestore initialized successfully');
 } catch (error) {

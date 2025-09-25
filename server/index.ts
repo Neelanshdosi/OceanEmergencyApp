@@ -19,6 +19,13 @@ import {
   getTweetsByHashtags,
 } from "./routes/twitter";
 import { testTwitterIntegration } from "./routes/twitter-test";
+import {
+  register,
+  login,
+  googleAuth,
+  getProfile,
+  updateProfile,
+} from "./routes/auth";
 
 export function createServer() {
   const app = express();
@@ -38,6 +45,13 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Authentication
+  app.post("/api/auth/register", register);
+  app.post("/api/auth/login", login);
+  app.post("/api/auth/google", googleAuth);
+  app.get("/api/auth/profile", getProfile);
+  app.put("/api/auth/profile", updateProfile);
 
   // Reports
   app.get("/api/reports", listReports);

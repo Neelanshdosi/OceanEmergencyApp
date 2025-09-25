@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SocialPost } from "@shared/api";
 
-interface EnhancedSocialPost extends SocialPost {
+interface EnhancedSocialPost extends Omit<SocialPost, 'user'> {
   location?: { lat: number; lng: number };
   user?: string;
   url?: string;
@@ -189,9 +189,10 @@ export const SocialFeed: React.FC = () => {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handlePostClick(post);
+                        setSelectedPost(post);
+                        setShowMap(true);
                       }}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 hover:bg-blue-50 hover:border-blue-300"
                     >
                       <MapPin className="h-3 w-3" />
                       Show on Map
@@ -206,8 +207,14 @@ export const SocialFeed: React.FC = () => {
 
       {/* Map Modal for Selected Post */}
       {selectedPost && showMap && selectedPost.location && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]"
+          onClick={() => setShowMap(false)}
+        >
+          <div 
+            className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto relative z-[101]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Post Location</h3>
               <Button 
@@ -232,7 +239,7 @@ export const SocialFeed: React.FC = () => {
                 </p>
               </div>
               
-              <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center relative">
                 <div className="text-center">
                   <MapPin className="h-8 w-8 mx-auto text-gray-400 mb-2" />
                   <p className="text-sm text-gray-600">Interactive Map</p>
@@ -240,16 +247,30 @@ export const SocialFeed: React.FC = () => {
                     Lat: {selectedPost.location.lat.toFixed(4)}, 
                     Lng: {selectedPost.location.lng.toFixed(4)}
                   </p>
-                  <Button 
-                    size="sm" 
-                    className="mt-2"
-                    onClick={() => {
-                      const mapUrl = `https://www.google.com/maps?q=${selectedPost.location!.lat},${selectedPost.location!.lng}`;
-                      window.open(mapUrl, '_blank');
-                    }}
-                  >
-                    Open in Google Maps
-                  </Button>
+                  <div className="flex gap-2 mt-2">
+                    <Button 
+                      size="sm" 
+                      onClick={() => {
+                        const mapUrl = `https://www.google.com/maps?q=${selectedPost.location!.lat},${selectedPost.location!.lng}`;
+                        window.open(mapUrl, '_blank');
+                      }}
+                    >
+                      Open in Google Maps
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        // Copy coordinates to clipboard
+                        const coords = `${selectedPost.location!.lat}, ${selectedPost.location!.lng}`;
+                        navigator.clipboard.writeText(coords).then(() => {
+                          alert('Coordinates copied to clipboard!');
+                        });
+                      }}
+                    >
+                      Copy Coordinates
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
