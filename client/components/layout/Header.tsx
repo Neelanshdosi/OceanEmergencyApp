@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { AuthDialog } from "@/components/AuthDialog";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, MapPin, ChevronDown } from "lucide-react";
+import { useMapContext } from '@/context/MapContext';
 
 export const Header: React.FC = () => {
   const { user, logout, loading } = useAuth();
