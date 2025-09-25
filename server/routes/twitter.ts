@@ -1,11 +1,21 @@
 import { RequestHandler } from 'express';
-import { twitterService } from '../services/twitter';
+import { createTwitterService } from '../services/twitter';
 import {
   TwitterSearchParams,
   TwitterSearchResponse,
   TwitterPostResponse,
   SocialResponse,
 } from '@shared/api';
+
+function getTwitterServiceOrRespond(res: any) {
+  try {
+    return createTwitterService();
+  } catch (err) {
+    console.error('Twitter service init error:', err);
+    res.status(503).json({ error: 'Twitter API not configured' });
+    return null as any;
+  }
+}
 
 /**
  * Search for tweets with custom query
@@ -36,6 +46,8 @@ export const searchTweets: RequestHandler = async (req, res) => {
       next_token: next_token as string,
     };
 
+    const twitterService = getTwitterServiceOrRespond(res);
+    if (!twitterService) return;
     const result: TwitterSearchResponse = await twitterService.searchTweets(params);
     res.json(result);
   } catch (error) {
@@ -51,11 +63,13 @@ export const searchOceanEmergencyTweets: RequestHandler = async (req, res) => {
   try {
     const { location, max_results = 20 } = req.query;
     
+    const twitterService = getTwitterServiceOrRespond(res);
+    if (!twitterService) return;
     const result: TwitterSearchResponse = await twitterService.searchOceanEmergencyTweets(
       location as string,
       parseInt(max_results as string) || 20
     );
-    
+
     res.json(result);
   } catch (error) {
     console.error('Search ocean emergency tweets error:', error);
@@ -70,20 +84,23 @@ export const getOceanEmergencySocialFeed: RequestHandler = async (req, res) => {
   try {
     const { location, max_results = 20 } = req.query;
     
+    const twitterService = getTwitterServiceOrRespond(res);
+    if (!twitterService) return;
+
     const tweetsResult = await twitterService.searchOceanEmergencyTweets(
       location as string,
       parseInt(max_results as string) || 20
     );
-    
+
     const socialPosts = twitterService.convertTweetsToSocialPosts(
       tweetsResult.data,
       tweetsResult.includes?.users
     );
-    
+
     const result: SocialResponse = {
       items: socialPosts,
     };
-    
+
     res.json(result);
   } catch (error) {
     console.error('Get ocean emergency social feed error:', error);
@@ -106,6 +123,8 @@ export const postTweet: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: 'Tweet text exceeds 280 characters' });
     }
     
+    const twitterService = getTwitterServiceOrRespond(res);
+    if (!twitterService) return;
     const result: TwitterPostResponse = await twitterService.postTweet(text);
     res.json(result);
   } catch (error) {
@@ -125,12 +144,15 @@ export const getUserByUsername: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: 'Username is required' });
     }
     
+    const twitterService = getTwitterServiceOrRespond(res);
+    if (!twitterService) return;
+
     const user = await twitterService.getUserByUsername(username);
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     res.json(user);
   } catch (error) {
     console.error('Get user error:', error);
@@ -145,6 +167,9 @@ export const getTrendingTopics: RequestHandler = async (req, res) => {
   try {
     const { woeid = 1 } = req.query;
     
+    const twitterService = getTwitterServiceOrRespond(res);
+    if (!twitterService) return;
+
     const trends = await twitterService.getTrendingTopics(parseInt(woeid as string) || 1);
     res.json({ trends });
   } catch (error) {
@@ -172,6 +197,8 @@ export const getTweetsByHashtags: RequestHandler = async (req, res) => {
       max_results: parseInt(max_results as string) || 20,
     };
     
+    const twitterService = getTwitterServiceOrRespond(res);
+    if (!twitterService) return;
     const result: TwitterSearchResponse = await twitterService.searchTweets(params);
     res.json(result);
   } catch (error) {
@@ -179,4 +206,3 @@ export const getTweetsByHashtags: RequestHandler = async (req, res) => {
     res.status(500).json({ error: 'Failed to get tweets by hashtags' });
   }
 };
-
