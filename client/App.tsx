@@ -32,6 +32,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/map" element={<MapPage />} />
+                <Route path="/analytics" element={<Analytics />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/auth/google/callback" element={<GoogleCallback />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
