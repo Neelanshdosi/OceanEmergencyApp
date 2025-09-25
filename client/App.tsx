@@ -14,7 +14,7 @@ import { Admin } from "./pages/Admin";
 import GoogleCallback from "./pages/GoogleCallback";
 import { AuthProvider } from "./context/AuthContext";
 import { MapProvider } from "./context/MapContext";
-import { Header } from "./components/layout/Header";
+import MainLayout from "./components/layout/MainLayout";
 
 const queryClient = new QueryClient();
 
