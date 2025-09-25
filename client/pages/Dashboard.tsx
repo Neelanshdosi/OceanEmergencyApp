@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
 import type { Report, SocialMediaPin } from "@shared/api";
+import type { Report, SocialMediaPin } from "@shared/api";
+import React, { useEffect, useState, useMemo } from "react";
 import { MapView } from "@/components/MapView";
 import { Filters, FiltersPanel } from "@/components/FiltersPanel";
 import { Button } from "@/components/ui/button";
@@ -20,16 +21,19 @@ export default function Dashboard() {
     if (filters.type !== "all") params.set("type", filters.type);
     if (filters.source !== "all") params.set("source", filters.source);
     if (filters.verified !== "all") params.set("verified", filters.verified);
-    const res = await fetch(`/api/reports?${params.toString()}`);
-    const json = await res.json();
-    setReports(json.items as Report[]);
+    try {
+      const res = await fetch(`/api/reports?${params.toString()}`);
+      const json = await res.json();
+      setReports(json.items as Report[]);
+    } catch (e) {
+      setReports([]);
+    }
   }
 
   async function loadSocialPins() {
     try {
-      const res = await fetch('/api/social');
+      const res = await fetch("/api/social");
       const json = await res.json();
-      // Convert social posts to pins for the map
       const pins: SocialMediaPin[] = json.items
         .filter((post: any) => post.location)
         .map((post: any) => ({
@@ -44,7 +48,7 @@ export default function Dashboard() {
         }));
       setSocialPins(pins);
     } catch (error) {
-      console.error('Error loading social pins:', error);
+      console.error("Error loading social pins:", error);
     }
   }
 
@@ -65,59 +69,129 @@ export default function Dashboard() {
 
   const center = useMemo<[number, number]>(() => [20, 0], []);
 
+  const safeReports = reports ?? [];
+  const total = safeReports.length;
+  const active = safeReports.filter((r) => !r.verified).length;
+  const resolved = safeReports.filter((r) => r.verified).length;
+
   return (
-    <main className="container grid min-h-[calc(100vh-56px)] grid-cols-1 gap-4 py-4 md:grid-cols-5">
-      <aside className="md:col-span-2 space-y-4">
-        <div className="rounded-xl bg-gradient-to-br from-ocean-600 to-teal-500 p-5 text-white shadow-lg">
-          <h1 className="text-2xl font-extrabold tracking-tight">
-            Analyst Dashboard
-          </h1>
-          <p className="mt-1 text-sm opacity-90">
-            View, filter, and verify reports.{" "}
-            {user
-              ? `Signed in as ${user.name} (${user.role})`
-              : "Sign in to verify."}
-          </p>
+    <main className="container min-h-[calc(100vh-56px)] py-6">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">
+          Overview of recent hazards and actions.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm text-muted-foreground">Total Reports</div>
+          <div className="mt-1 text-2xl font-semibold">{total}</div>
         </div>
-        <FiltersPanel initial={filters} onChange={setFilters} />
-        <div className="rounded-xl border bg-card p-4">
-          <h3 className="mb-2 text-lg font-semibold">Recent Reports</h3>
-          <div className="space-y-2">
-            {reports.map((r) => (
-              <div
-                key={r.id}
-                className="flex items-start justify-between gap-2 rounded-lg border p-2"
-              >
-                <div>
-                  <div className="text-sm font-medium">{r.title}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {r.type} • {new Date(r.timestamp).toLocaleString()} •{" "}
-                    {r.source}
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm text-muted-foreground">Active Alerts</div>
+          <div className="mt-1 text-2xl font-semibold">{active}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm text-muted-foreground">Resolved</div>
+          <div className="mt-1 text-2xl font-semibold">{resolved}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm text-muted-foreground">Avg Response</div>
+          <div className="mt-1 text-2xl font-semibold">12m</div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <div className="rounded-lg border bg-card p-4">
+            <h3 className="mb-3 text-lg font-semibold">Recent Alerts</h3>
+            <div className="space-y-2">
+              {safeReports.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-start justify-between gap-2 rounded-lg border p-2"
+                >
+                  <div>
+                    <div className="text-sm font-medium">{r.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {r.type} • {new Date(r.timestamp).toLocaleString()} •{" "}
+                      {r.source}
+                    </div>
+                    <p className="text-sm mt-1 max-w-[40ch]">{r.description}</p>
                   </div>
-                  <p className="text-sm mt-1 max-w-[40ch]">{r.description}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`rounded px-2 py-0.5 text-xs ${r.verified ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200" : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200"}`}
-                  >
-                    {r.verified ? "Verified" : "Unverified"}
-                  </span>
-                  {!r.verified && (
-                    <Button
-                      size="sm"
-                      onClick={() => verify(r.id)}
-                      disabled={!user || user.role !== "analyst"}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded px-2 py-0.5 text-xs ${r.verified ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200" : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200"}`}
                     >
-                      Verify
-                    </Button>
-                  )}
+                      {r.verified ? "Verified" : "Unverified"}
+                    </span>
+                    {!r.verified && (
+                      <Button
+                        size="sm"
+                        onClick={() => verify(r.id)}
+                        disabled={!user || user.role !== "analyst"}
+                      >
+                        Verify
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </aside>
-      <section className="md:col-span-3 rounded-xl border p-0">
+
+        <div className="md:col-span-1">
+          <div className="rounded-lg border bg-card p-4">
+            <h3 className="mb-3 text-lg font-semibold">Quick Actions</h3>
+            <div className="flex flex-col gap-2">
+              <a
+                href="#"
+                className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-md bg-muted-foreground/5 p-2">+</div>
+                  <div className="text-sm font-medium">Report New Hazard</div>
+                </div>
+                <div className="text-xs text-muted-foreground">›</div>
+              </a>
+              <a
+                href="/map"
+                className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-md bg-muted-foreground/5 p-2">📍</div>
+                  <div className="text-sm font-medium">View Live Map</div>
+                </div>
+                <div className="text-xs text-muted-foreground">›</div>
+              </a>
+              <a
+                href="#"
+                className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-md bg-muted-foreground/5 p-2">📞</div>
+                  <div className="text-sm font-medium">Emergency Call</div>
+                </div>
+                <div className="text-xs text-muted-foreground">›</div>
+              </a>
+              <a
+                href="#"
+                className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-md bg-muted-foreground/5 p-2">⬇️</div>
+                  <div className="text-sm font-medium">Export Reports</div>
+                </div>
+                <div className="text-xs text-muted-foreground">›</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-lg border">
         <div className="flex items-center justify-between p-3">
           <div>
             <h3 className="text-lg font-semibold">Map & Hotspots</h3>
@@ -129,10 +203,10 @@ export default function Dashboard() {
             Refresh
           </Button>
         </div>
-        <div className="h-[70vh] w-full">
+        <div className="h-[60vh] w-full">
           <MapView reports={reports} socialPins={socialPins} center={center} />
         </div>
-      </section>
+      </div>
     </main>
   );
 }

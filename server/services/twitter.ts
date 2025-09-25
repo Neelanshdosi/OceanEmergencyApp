@@ -195,5 +195,7 @@ export class TwitterService {
   }
 }
 
-// Export singleton instance
-export const twitterService = new TwitterService();
+// Factory to create a TwitterService instance on demand
+export function createTwitterService() {
+  return new TwitterService();
+}

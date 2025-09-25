@@ -41,8 +41,10 @@ export const testTwitterIntegration: RequestHandler = async (req, res) => {
 
     // If credentials are configured, try to initialize the service
     try {
-      const { twitterService } = await import('../services/twitter');
-      
+      const { createTwitterService } = await import('../services/twitter');
+      // Try to initialize the service to verify configuration
+      createTwitterService();
+
       res.json({
         status: 'success',
         message: 'Twitter API integration is properly configured',
@@ -74,4 +76,3 @@ export const testTwitterIntegration: RequestHandler = async (req, res) => {
     res.status(500).json({ error: 'Failed to test Twitter integration' });
   }
 };
-

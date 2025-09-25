@@ -1,5 +1,12 @@
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  Polygon,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
 import L from "leaflet";
@@ -58,9 +65,13 @@ function HeatCanvasTweaks() {
   return null;
 }
 
-function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
+function MapClickHandler({
+  onMapClick,
+}: {
+  onMapClick?: (lat: number, lng: number) => void;
+}) {
   const map = useMap();
-  
+
   useEffect(() => {
     if (onMapClick) {
       const handleClick = (e: any) => {
@@ -72,30 +83,82 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
       };
     }
   }, [map, onMapClick]);
-  
+
   return null;
 }
 
+function SearchMarker({
+  location,
+}: {
+  location: { lat: number; lng: number; display_name?: string };
+}) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([location.lat, location.lng], Math.max(map.getZoom(), 8));
+  }, [location.lat, location.lng, map]);
+
+  return (
+    <Marker position={[location.lat, location.lng]}>
+      <Popup>
+        <div className="max-w-xs">
+          <div className="font-medium">
+            {location.display_name || "Search result"}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            lat {location.lat.toFixed(4)} · lng {location.lng.toFixed(4)}
+          </div>
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
+
 export const MapView: React.FC<{
-  reports: Report[];
+  reports?: Report[];
   socialPins?: SocialMediaPin[];
-  center?: [number, number];
+  defaultCenter?: [number, number];
+  defaultZoom?: number;
+  minZoom?: number;
+  maxZoom?: number;
+  bounds?: [[number, number], [number, number]];
+  maxBoundsViscosity?: number;
   onMapClick?: (lat: number, lng: number) => void;
-}> = ({ reports, socialPins = [], center = [20, 0], onMapClick }) => {
-  const points: [number, number, number?][] = reports.map((r) => [
-    r.latitude,
-    r.longitude,
-    0.6,
-  ]);
+  selectedSearchLocation?: {
+    lat: number;
+    lng: number;
+    display_name?: string;
+  } | null;
+}> = ({
+  reports = [],
+  socialPins = [],
+  defaultCenter = [22.5937, 78.9629],
+  defaultZoom = 5,
+  minZoom = 2,
+  maxZoom = 18,
+  bounds,
+  maxBoundsViscosity = 0.8,
+  onMapClick,
+  selectedSearchLocation = null,
+}) => {
+  const safeReports = Array.isArray(reports) ? reports : [];
+  const points: [number, number, number?][] = safeReports
+    .filter(
+      (r) => typeof r.latitude === "number" && typeof r.longitude === "number",
+    )
+    .map((r) => [r.latitude, r.longitude, 0.6]);
   return (
     <MapContainer
-      center={center}
-      zoom={3}
+      center={defaultCenter}
+      zoom={defaultZoom}
+      minZoom={minZoom}
+      maxZoom={maxZoom}
       scrollWheelZoom
       className="h-full w-full rounded-lg border relative z-10"
       whenReady={() => {
         // Map is ready, we'll set up click handler in useEffect
       }}
+      maxBounds={bounds}
+      maxBoundsViscosity={bounds ? maxBoundsViscosity : undefined}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -104,6 +167,21 @@ export const MapView: React.FC<{
       <HeatLayer points={points} />
       <HeatCanvasTweaks />
       <MapClickHandler onMapClick={onMapClick} />
+
+      {/* search / selected marker */}
+      {selectedSearchLocation && (
+        <SearchMarker location={selectedSearchLocation} />
+      )}
+
+      {/* Geofences */}
+      {((props as any)?.geofences || []).map((f: any) => (
+        <Polygon
+          key={f.id}
+          pathOptions={{ color: "#2563eb", fillOpacity: 0.15 }}
+          positions={f.points.map((p: any) => [p.lat, p.lng])}
+        />
+      ))}
+
       {reports.map((r) => (
         <Marker key={r.id} position={[r.latitude, r.longitude]}>
           <Popup>
@@ -135,51 +213,72 @@ export const MapView: React.FC<{
           </Popup>
         </Marker>
       ))}
-      
-      {socialPins.map((pin) => (
-        <Marker 
-          key={`social-${pin.id}`} 
-          position={[pin.location.lat, pin.location.lng]}
-          icon={L.divIcon({
-            className: 'social-pin',
-            html: `<div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">📱</div>`,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-          })}
-        >
-          <Popup>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">
-                  {pin.platform === 'twitter' ? '🐦' : pin.platform === 'reddit' ? '🔴' : '📱'}
-                </span>
-                <span className="font-semibold text-sm">{pin.user}</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  {pin.platform}
-                </span>
-              </div>
-              <p className="text-sm max-w-[220px]">{pin.text}</p>
-              <div className="flex flex-wrap gap-1">
-                {pin.keywords.map((keyword) => (
-                  <span key={keyword} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                    #{keyword}
+
+      {socialPins
+        .filter(
+          (pin) =>
+            pin &&
+            pin.location &&
+            typeof pin.location.lat === "number" &&
+            typeof pin.location.lng === "number",
+        )
+        .map((pin) => (
+          <Marker
+            key={`social-${pin.id}`}
+            position={[pin.location.lat, pin.location.lng]}
+            icon={L.divIcon({
+              className: "social-pin",
+              html: `<div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">📱</div>`,
+              iconSize: [24, 24],
+              iconAnchor: [12, 12],
+            })}
+          >
+            <Popup>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">
+                    {pin.platform === "twitter"
+                      ? "🐦"
+                      : pin.platform === "reddit"
+                        ? "🔴"
+                        : "📱"}
                   </span>
-                ))}
+                  <span className="font-semibold text-sm">{pin.user}</span>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    {pin.platform}
+                  </span>
+                </div>
+                <p className="text-sm max-w-[220px]">{pin.text}</p>
+                <div className="flex flex-wrap gap-1">
+                  {(pin.keywords || []).map((keyword) => (
+                    <span
+                      key={keyword}
+                      className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+                    >
+                      #{keyword}
+                    </span>
+                  ))}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {pin.createdAt
+                    ? new Date(pin.createdAt).toLocaleString()
+                    : ""}
+                </div>
+                <div
+                  className={`text-xs px-2 py-1 rounded ${
+                    pin.sentiment === "negative"
+                      ? "bg-red-100 text-red-800"
+                      : pin.sentiment === "positive"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  Sentiment: {pin.sentiment || "neutral"}
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                {new Date(pin.createdAt).toLocaleString()}
-              </div>
-              <div className={`text-xs px-2 py-1 rounded ${
-                pin.sentiment === 'negative' ? 'bg-red-100 text-red-800' :
-                pin.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
-                Sentiment: {pin.sentiment}
-              </div>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+            </Popup>
+          </Marker>
+        ))}
     </MapContainer>
   );
 };
