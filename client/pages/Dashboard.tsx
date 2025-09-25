@@ -68,9 +68,10 @@ export default function Dashboard() {
 
   const center = useMemo<[number, number]>(() => [20, 0], []);
 
-  const total = reports.length;
-  const active = reports.filter((r) => !r.verified).length;
-  const resolved = reports.filter((r) => r.verified).length;
+  const safeReports = reports ?? [];
+  const total = safeReports.length;
+  const active = safeReports.filter((r) => !r.verified).length;
+  const resolved = safeReports.filter((r) => r.verified).length;
 
   return (
     <main className="container min-h-[calc(100vh-56px)] py-6">
