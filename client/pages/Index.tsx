@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, useMemo } from 'react';
 import type { Report } from "@shared/api";
 import { ReportForm } from "@/components/ReportForm";
 import { MapView } from "@/components/MapView";
