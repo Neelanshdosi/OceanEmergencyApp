@@ -13,7 +13,7 @@ export default function Index() {
   const [pick, setPick] = useState<{ lat: number; lng: number } | null>(null);
 
   const center = useMemo<[number, number]>(() => {
-    return [20, 0];
+    return INDIA_CENTER;
   }, []);
 
   async function loadReports() {
