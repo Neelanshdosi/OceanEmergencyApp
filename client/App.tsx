@@ -9,9 +9,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
+import MapPage from "./pages/MapPage";
 import { Admin } from "./pages/Admin";
 import GoogleCallback from "./pages/GoogleCallback";
 import { AuthProvider } from "./context/AuthContext";
+import { MapProvider } from "./context/MapContext";
 import { Header } from "./components/layout/Header";
 
 const queryClient = new QueryClient();
