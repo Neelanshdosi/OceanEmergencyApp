@@ -148,6 +148,11 @@ export const MapView: React.FC<{
         <SearchMarker location={selectedSearchLocation} />
       )}
 
+      {/* Geofences */}
+      {( (props as any)?.geofences || [] ).map((f: any) => (
+        <Polygon key={f.id} pathOptions={{ color: '#2563eb', fillOpacity: 0.15 }} positions={f.points.map((p: any) => [p.lat, p.lng])} />
+      ))}
+
       {reports.map((r) => (
         <Marker key={r.id} position={[r.latitude, r.longitude]}>
           <Popup>
@@ -179,7 +184,7 @@ export const MapView: React.FC<{
           </Popup>
         </Marker>
       ))}
-      
+
       {socialPins
         .filter(pin => pin && pin.location && typeof pin.location.lat === 'number' && typeof pin.location.lng === 'number')
         .map((pin) => (
