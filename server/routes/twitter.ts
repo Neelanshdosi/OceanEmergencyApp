@@ -140,6 +140,23 @@ export const getOceanEmergencySocialFeed: RequestHandler = async (req, res) => {
   try {
     const { location, max_results = 20 } = req.query;
 
+    // If Twitter integration disabled, return fallback
+    if (process.env.TWITTER_ENABLED !== 'true') {
+      console.warn('TWITTER_ENABLED not true — returning local fallback social feed');
+      const items = makeFallbackSocial(location as string | undefined).map((it, i) => ({
+        id: it.id,
+        platform: it.platform as any,
+        text: it.text,
+        createdAt: it.createdAt,
+        user: it.user,
+        location: it.location,
+        keywords: it.keywords,
+        sentiment: it.sentiment as any,
+      }));
+      const result: SocialResponse = { items };
+      return res.json(result);
+    }
+
     // If rate-limited, return fallback
     const now = Math.floor(Date.now() / 1000);
     if (twitterRateLimitedUntil && now < twitterRateLimitedUntil) {
