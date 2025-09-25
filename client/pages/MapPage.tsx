@@ -3,6 +3,8 @@ import { MapView } from '@/components/MapView';
 import { useMapContext } from '@/context/MapContext';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ReportForm } from '@/components/ReportForm';
 
 const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
 const INDIA_BOUNDS: [[number, number], [number, number]] = [[6.462, 68.109], [35.513, 97.395]];
