@@ -67,6 +67,13 @@ export const searchTweets: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
+    // If Twitter integration is disabled via env, return fallback immediately
+    if (process.env.TWITTER_ENABLED !== 'true') {
+      console.warn('TWITTER_ENABLED not true — returning local fallback data');
+      const items = makeFallbackSocial(query);
+      return res.json({ data: items, includes: {}, meta: { fallback: true, reason: 'disabled' } } as TwitterSearchResponse);
+    }
+
     // If we're currently rate-limited, immediately return fallback
     const now = Math.floor(Date.now() / 1000);
     if (twitterRateLimitedUntil && now < twitterRateLimitedUntil) {
