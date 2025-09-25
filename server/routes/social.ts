@@ -69,18 +69,19 @@ export const listSocial: RequestHandler = (req, res) => {
         text,
         createdAt: new Date(now - i * 60_000).toISOString(),
         user: i % 2 === 0 ? "@coastwatch" : "u/seaScope",
-        location:
-          i % 3 === 0
-            ? {
-                lat: 37.7749 + Math.random() * 0.1,
-                lng: -122.4194 + Math.random() * 0.1,
-              }
-            : null,
+        location: i % 3 === 0 ? { lat: 37.7749 + Math.random() * 0.1, lng: -122.4194 + Math.random() * 0.1 } : null,
         keywords,
         sentiment,
       } satisfies SocialPost;
     })
-    .filter((p) => !q || p.text.toLowerCase().includes(q));
+    .filter((p) => {
+      if (!q) return true;
+      // Support OR syntax and multiple keywords: split by OR, commas, semicolons or whitespace
+      const tokens = q.split(/\s+(?:OR|or)\s+|[,;]+|\s+/).map(t => t.trim()).filter(Boolean);
+      const lower = p.text.toLowerCase();
+      // Match if any token is present in the post text
+      return tokens.some(token => lower.includes(token.toLowerCase()));
+    });
 
   const response: SocialResponse = { items };
   res.json(response);
