@@ -89,10 +89,10 @@ export const Header: React.FC = () => {
 
               {mapMenuOpen && (
                 <div role="menu" className="absolute mt-2 right-0 w-44 rounded-md border bg-card p-2 shadow-lg z-50">
-                  <button className="w-full text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Filters</button>
-                  <button className="w-full text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Subscribe to area</button>
-                  <button className="w-full text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Draw geofence</button>
-                  <button className="w-full text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Export view</button>
+                  <Link to="/map?panel=filters" className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Filters</Link>
+                  <Link to="/map?panel=subscribe" className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Subscribe to area</Link>
+                  <Link to="/map?panel=draw" className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Draw geofence</Link>
+                  <Link to="/map?panel=export" className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Export view</Link>
                 </div>
               )}
             </div>
