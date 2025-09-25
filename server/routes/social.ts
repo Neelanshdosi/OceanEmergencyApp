@@ -47,14 +47,14 @@ function analyze(text: string) {
   return { keywords, sentiment };
 }
 
-// In-memory rotating sample
+// In-memory rotating sample (India-focused)
 const samples = [
-  "Huge waves near the pier, stay safe! #ocean",
-  "Oil spill reported south beach area, strong smell",
-  "Calm waters today despite yesterday's storm",
-  "Rip current warning signs posted by lifeguards",
-  "Flooding in the marina parking lot after high tide",
-  "Tsunami alert false alarm, everything is ok now",
+  "Huge waves reported near Chennai Marina, people advised to stay away from the shore",
+  "Oil spill sighted off the coast of Goa, strong smell in nearby beaches",
+  "Calm waters today at Kovalam despite yesterday's storm",
+  "Rip current warning near Puri beach reported by locals",
+  "Flooding reported in Mumbai's coastal road after high tide",
+  "Tsunami alert tested — no casualties reported along Andaman and Nicobar islands",
 ];
 
 export const listSocial: RequestHandler = (req, res) => {
