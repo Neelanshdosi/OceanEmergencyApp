@@ -59,7 +59,9 @@ export const SocialFeed: React.FC = () => {
   const fetchPosts = async () => {
     try {
       // First try Twitter search endpoint
-      const twitterRes = await fetch(`/api/twitter/search?query=${encodeURIComponent(q)}&max_results=20`);
+      // Append India constraint to favor India results
+      const twitterQuery = `${q} near:India -is:retweet lang:en`;
+      const twitterRes = await fetch(`/api/twitter/search?query=${encodeURIComponent(twitterQuery)}&max_results=20`);
       if (twitterRes.ok) {
         const json = await twitterRes.json();
         if (json && Array.isArray(json.data)) {
