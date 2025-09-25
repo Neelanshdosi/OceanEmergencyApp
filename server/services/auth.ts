@@ -145,7 +145,21 @@ export class AuthService {
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
-    const userDoc = await this.db
+    if (this.useMemory || !this.db) {
+      const found = this.inMemoryUsers.find((u:any) => u.email === email);
+      if (!found) return null;
+      return {
+        id: found.id,
+        email: found.email,
+        name: found.name,
+        role: found.role,
+        avatar: found.avatar,
+        createdAt: found.createdAt,
+        lastLoginAt: found.lastLoginAt,
+      };
+    }
+
+    const userDoc = await this.db!
       .collection(this.usersCollection)
       .where('email', '==', email)
       .limit(1)
