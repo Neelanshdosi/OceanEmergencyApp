@@ -1,4 +1,5 @@
 import type { Report, SocialMediaPin } from "@shared/api";
+import type { Report, SocialMediaPin } from "@shared/api";
 import React, { useEffect, useState, useMemo } from 'react';
 import { MapView } from "@/components/MapView";
 import { Filters, FiltersPanel } from "@/components/FiltersPanel";
