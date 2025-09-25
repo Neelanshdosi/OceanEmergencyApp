@@ -26,6 +26,8 @@ import {
   getProfile,
   updateProfile,
 } from "./routes/auth";
+import { googleCallback } from "./routes/google-oauth";
+import { seedAdmin } from "./seed-admin";
 
 export function createServer() {
   const app = express();
@@ -37,6 +39,9 @@ export function createServer() {
 
   // Seed sample data
   seedReports().catch(console.error);
+  
+  // Seed admin account
+  seedAdmin().catch(console.error);
 
   // API routes
   app.get("/api/ping", (_req, res) => {
@@ -50,6 +55,7 @@ export function createServer() {
   app.post("/api/auth/register", register);
   app.post("/api/auth/login", login);
   app.post("/api/auth/google", googleAuth);
+  app.post("/api/auth/google/callback", googleCallback);
   app.get("/api/auth/profile", getProfile);
   app.put("/api/auth/profile", updateProfile);
 

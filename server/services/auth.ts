@@ -20,6 +20,11 @@ export class AuthService {
     role: 'citizen' | 'analyst' | 'admin';
     avatar?: string;
   }): Promise<User> {
+    // Prevent admin registration through normal flow
+    if (userData.role === 'admin') {
+      throw new Error('Admin accounts cannot be created through registration');
+    }
+
     // Check if user already exists
     const existingUser = await this.getUserByEmail(userData.email);
     if (existingUser) {
@@ -146,30 +151,42 @@ export class AuthService {
     }
   }
 
-  async createOrUpdateGoogleUser(googleUser: {
-    email: string;
-    name: string;
-    picture?: string;
-  }): Promise<AuthResponse> {
-    let user = await this.getUserByEmail(googleUser.email);
+  async googleAuth(email: string, name: string, picture?: string): Promise<AuthResponse> {
+    let user = await this.getUserByEmail(email);
     
     if (!user) {
       // Create new user with Google account
-      user = await this.createUser({
-        email: googleUser.email,
-        password: '', // No password for Google users
-        name: googleUser.name,
-        role: 'citizen', // Default role
-        avatar: googleUser.picture,
-      });
+      const now = new Date().toISOString();
+      const newUser: User = {
+        id: this.db.collection('temp').doc().id,
+        email: email,
+        name: name,
+        role: 'citizen', // Default role for Google users
+        avatar: picture,
+        createdAt: now,
+      };
+
+      // Store user in database (no password for Google users)
+      const userDoc = {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        avatar: newUser.avatar || null,
+        createdAt: newUser.createdAt,
+        password: null, // No password for Google users
+      };
+      
+      await this.db.collection(this.usersCollection).doc(newUser.id).set(userDoc);
+      user = newUser;
     } else {
       // Update existing user's Google info
       await this.db.collection(this.usersCollection).doc(user.id).update({
-        avatar: googleUser.picture,
+        avatar: picture,
         lastLoginAt: new Date().toISOString(),
       });
       
-      user.avatar = googleUser.picture;
+      user.avatar = picture;
       user.lastLoginAt = new Date().toISOString();
     }
 
