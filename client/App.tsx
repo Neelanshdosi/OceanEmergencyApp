@@ -26,15 +26,17 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/auth/google/callback" element={<GoogleCallback />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <MainLayout>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/map" element={<MapPage />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/auth/google/callback" element={<GoogleCallback />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MainLayout>
           </BrowserRouter>
         </TooltipProvider>
       </MapProvider>
