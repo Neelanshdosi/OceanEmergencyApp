@@ -11,6 +11,12 @@ export const Header: React.FC = () => {
   const { user, logout, loading } = useAuth();
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const { pathname } = useLocation();
+  const { activeHazardsCount } = useMapContext();
+
+  const [mapMenuOpen, setMapMenuOpen] = useState(false);
+  const mapMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const isMapActive = pathname === '/map' || pathname.startsWith('/map');
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/40 backdrop-blur bg-background/70">
@@ -46,6 +52,51 @@ export const Header: React.FC = () => {
             >
               Dashboard
             </Link>
+
+            {/* Live Map nav item */}
+            <div className={"relative"} ref={mapMenuRef}>
+              <div className={cn("inline-flex items-center gap-2 rounded px-2 py-1 cursor-pointer select-none focus:outline-none", isMapActive ? 'bg-muted-foreground/10 underline decoration-2 decoration-transparent' : '')}>
+                <Link
+                  to="/map"
+                  aria-label="Open Live Map"
+                  className={cn(
+                    "text-sm font-medium inline-flex items-center gap-2",
+                    isMapActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span>Live Map</span>
+                  {typeof activeHazardsCount === 'number' && (
+                    <span className="ml-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full bg-red-600 text-white">
+                      {activeHazardsCount}
+                    </span>
+                  )}
+                </Link>
+
+                <button
+                  aria-haspopup="true"
+                  aria-expanded={mapMenuOpen}
+                  aria-label="Live Map quick actions"
+                  onClick={() => setMapMenuOpen((s) => !s)}
+                  onBlur={() => setTimeout(() => setMapMenuOpen(false), 150)}
+                  className="p-1"
+                >
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </div>
+
+              {mapMenuOpen && (
+                <div role="menu" className="absolute mt-2 right-0 w-44 rounded-md border bg-card p-2 shadow-lg z-50">
+                  <button className="w-full text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Filters</button>
+                  <button className="w-full text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Subscribe to area</button>
+                  <button className="w-full text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Draw geofence</button>
+                  <button className="w-full text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Export view</button>
+                </div>
+              )}
+            </div>
+
             {user?.role === 'admin' && (
               <Link
                 className={cn(
