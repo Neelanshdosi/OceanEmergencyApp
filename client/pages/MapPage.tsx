@@ -10,7 +10,7 @@ const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
 const INDIA_BOUNDS: [[number, number], [number, number]] = [[6.462, 68.109], [35.513, 97.395]];
 
 const MapPage: React.FC = () => {
-  const { setActiveHazardsCount } = useMapContext();
+  const { activeHazardsCount, setActiveHazardsCount } = useMapContext();
 
   useEffect(() => {
     // Placeholder: fetch active hazards count from API when available
