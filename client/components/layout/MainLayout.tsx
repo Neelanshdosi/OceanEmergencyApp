@@ -1,5 +1,5 @@
-import React from 'react';
-import { Header } from './Header';
+import React from "react";
+import { Header } from "./Header";
 
 const MainLayout: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
   return (

@@ -1,14 +1,15 @@
-import admin from 'firebase-admin';
-import admin from 'firebase-admin';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { User, AuthRequest, AuthResponse } from '@shared/api';
+import admin from "firebase-admin";
+import admin from "firebase-admin";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { User, AuthRequest, AuthResponse } from "@shared/api";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET =
+  process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 export class AuthService {
   private db: admin.firestore.Firestore | null = null;
-  private usersCollection = 'users';
+  private usersCollection = "users";
   private useMemory = false;
   private inMemoryUsers: User[] = [];
 
@@ -16,9 +17,12 @@ export class AuthService {
     try {
       this.db = admin.firestore();
       // simple check
-      if (!this.db) throw new Error('Firestore not available');
+      if (!this.db) throw new Error("Firestore not available");
     } catch (err: any) {
-      console.warn('Firestore not initialized for AuthService, falling back to in-memory users:', err?.message);
+      console.warn(
+        "Firestore not initialized for AuthService, falling back to in-memory users:",
+        err?.message,
+      );
       this.db = null;
       this.useMemory = true;
     }
@@ -28,18 +32,18 @@ export class AuthService {
     email: string;
     password: string;
     name: string;
-    role: 'citizen' | 'analyst' | 'admin';
+    role: "citizen" | "analyst" | "admin";
     avatar?: string;
   }): Promise<User> {
     // Prevent admin registration through normal flow
-    if (userData.role === 'admin') {
-      throw new Error('Admin accounts cannot be created through registration');
+    if (userData.role === "admin") {
+      throw new Error("Admin accounts cannot be created through registration");
     }
 
     // Check if user already exists
     const existingUser = await this.getUserByEmail(userData.email);
     if (existingUser) {
-      throw new Error('User with this email already exists');
+      throw new Error("User with this email already exists");
     }
 
     // Hash password
@@ -62,7 +66,7 @@ export class AuthService {
     }
 
     const user: User = {
-      id: this.db!.collection('temp').doc().id,
+      id: this.db!.collection("temp").doc().id,
       email: userData.email,
       name: userData.name,
       role: userData.role,
@@ -86,12 +90,18 @@ export class AuthService {
     return user;
   }
 
-  async authenticateUser(email: string, password: string): Promise<AuthResponse> {
+  async authenticateUser(
+    email: string,
+    password: string,
+  ): Promise<AuthResponse> {
     if (this.useMemory || !this.db) {
-      const found = this.inMemoryUsers.find((u:any) => u.email === email);
-      if (!found) throw new Error('Invalid email or password');
-      const isValidPassword = await bcrypt.compare(password, found.password || '');
-      if (!isValidPassword) throw new Error('Invalid email or password');
+      const found = this.inMemoryUsers.find((u: any) => u.email === email);
+      if (!found) throw new Error("Invalid email or password");
+      const isValidPassword = await bcrypt.compare(
+        password,
+        found.password || "",
+      );
+      if (!isValidPassword) throw new Error("Invalid email or password");
       const user: User = {
         id: found.id,
         email: found.email,
@@ -101,25 +111,28 @@ export class AuthService {
         createdAt: found.createdAt,
         lastLoginAt: new Date().toISOString(),
       };
-      const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        JWT_SECRET,
+        { expiresIn: "7d" },
+      );
       return { user, token };
     }
 
-    const userDoc = await this.db!
-      .collection(this.usersCollection)
-      .where('email', '==', email)
+    const userDoc = await this.db!.collection(this.usersCollection)
+      .where("email", "==", email)
       .limit(1)
       .get();
 
     if (userDoc.empty) {
-      throw new Error('Invalid email or password');
+      throw new Error("Invalid email or password");
     }
 
     const userData = userDoc.docs[0].data();
     const isValidPassword = await bcrypt.compare(password, userData.password);
 
     if (!isValidPassword) {
-      throw new Error('Invalid email or password');
+      throw new Error("Invalid email or password");
     }
 
     // Update last login
@@ -138,7 +151,7 @@ export class AuthService {
     };
 
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: '7d',
+      expiresIn: "7d",
     });
 
     return { user, token };
@@ -146,7 +159,7 @@ export class AuthService {
 
   async getUserByEmail(email: string): Promise<User | null> {
     if (this.useMemory || !this.db) {
-      const found = this.inMemoryUsers.find((u:any) => u.email === email);
+      const found = this.inMemoryUsers.find((u: any) => u.email === email);
       if (!found) return null;
       return {
         id: found.id,
@@ -159,9 +172,8 @@ export class AuthService {
       };
     }
 
-    const userDoc = await this.db!
-      .collection(this.usersCollection)
-      .where('email', '==', email)
+    const userDoc = await this.db!.collection(this.usersCollection)
+      .where("email", "==", email)
       .limit(1)
       .get();
 
@@ -183,7 +195,7 @@ export class AuthService {
 
   async getUserById(id: string): Promise<User | null> {
     if (this.useMemory || !this.db) {
-      const found = this.inMemoryUsers.find((u:any) => u.id === id);
+      const found = this.inMemoryUsers.find((u: any) => u.id === id);
       if (!found) return null;
       return {
         id: found.id,
@@ -196,7 +208,9 @@ export class AuthService {
       };
     }
 
-    const userDoc = await this.db!.collection(this.usersCollection).doc(id).get();
+    const userDoc = await this.db!.collection(this.usersCollection)
+      .doc(id)
+      .get();
 
     if (!userDoc.exists) {
       return null;
@@ -216,14 +230,21 @@ export class AuthService {
 
   async verifyToken(token: string): Promise<User | null> {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
+      const decoded = jwt.verify(token, JWT_SECRET) as {
+        userId: string;
+        email: string;
+      };
       return await this.getUserById(decoded.userId);
     } catch (error) {
       return null;
     }
   }
 
-  async googleAuth(email: string, name: string, picture?: string): Promise<AuthResponse> {
+  async googleAuth(
+    email: string,
+    name: string,
+    picture?: string,
+  ): Promise<AuthResponse> {
     let user = await this.getUserByEmail(email);
 
     if (!user) {
@@ -235,7 +256,7 @@ export class AuthService {
           id: `mem_${Date.now()}_${Math.random()}`,
           email,
           name,
-          role: 'citizen',
+          role: "citizen",
           avatar: picture,
           createdAt: now,
         };
@@ -244,10 +265,10 @@ export class AuthService {
         user = newUser as User;
       } else {
         const newUser: User = {
-          id: this.db!.collection('temp').doc().id,
+          id: this.db!.collection("temp").doc().id,
           email: email,
           name: name,
-          role: 'citizen', // Default role for Google users
+          role: "citizen", // Default role for Google users
           avatar: picture,
           createdAt: now,
         };
@@ -263,13 +284,15 @@ export class AuthService {
           password: null, // No password for Google users
         };
 
-        await this.db!.collection(this.usersCollection).doc(newUser.id).set(userDoc);
+        await this.db!.collection(this.usersCollection)
+          .doc(newUser.id)
+          .set(userDoc);
         user = newUser;
       }
     } else {
       // Update existing user's Google info
       if (this.useMemory || !this.db) {
-        const idx = this.inMemoryUsers.findIndex((u:any) => u.id === user!.id);
+        const idx = this.inMemoryUsers.findIndex((u: any) => u.id === user!.id);
         if (idx >= 0) {
           this.inMemoryUsers[idx].avatar = picture;
           this.inMemoryUsers[idx].lastLoginAt = new Date().toISOString();
@@ -288,7 +311,7 @@ export class AuthService {
     }
 
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: '7d',
+      expiresIn: "7d",
     });
 
     return { user, token };

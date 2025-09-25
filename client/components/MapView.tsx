@@ -1,5 +1,12 @@
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polygon } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  Polygon,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
 import L from "leaflet";
@@ -58,7 +65,11 @@ function HeatCanvasTweaks() {
   return null;
 }
 
-function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
+function MapClickHandler({
+  onMapClick,
+}: {
+  onMapClick?: (lat: number, lng: number) => void;
+}) {
   const map = useMap();
 
   useEffect(() => {
@@ -76,18 +87,26 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
   return null;
 }
 
-function SearchMarker({ location }: { location: { lat:number, lng:number, display_name?: string } }){
+function SearchMarker({
+  location,
+}: {
+  location: { lat: number; lng: number; display_name?: string };
+}) {
   const map = useMap();
-  useEffect(()=>{
+  useEffect(() => {
     map.setView([location.lat, location.lng], Math.max(map.getZoom(), 8));
-  },[location.lat, location.lng, map]);
+  }, [location.lat, location.lng, map]);
 
   return (
     <Marker position={[location.lat, location.lng]}>
       <Popup>
         <div className="max-w-xs">
-          <div className="font-medium">{location.display_name || 'Search result'}</div>
-          <div className="text-xs text-muted-foreground">lat {location.lat.toFixed(4)} · lng {location.lng.toFixed(4)}</div>
+          <div className="font-medium">
+            {location.display_name || "Search result"}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            lat {location.lat.toFixed(4)} · lng {location.lng.toFixed(4)}
+          </div>
         </div>
       </Popup>
     </Marker>
@@ -104,7 +123,11 @@ export const MapView: React.FC<{
   bounds?: [[number, number], [number, number]];
   maxBoundsViscosity?: number;
   onMapClick?: (lat: number, lng: number) => void;
-  selectedSearchLocation?: { lat:number, lng:number, display_name?: string } | null;
+  selectedSearchLocation?: {
+    lat: number;
+    lng: number;
+    display_name?: string;
+  } | null;
 }> = ({
   reports = [],
   socialPins = [],
@@ -119,7 +142,9 @@ export const MapView: React.FC<{
 }) => {
   const safeReports = Array.isArray(reports) ? reports : [];
   const points: [number, number, number?][] = safeReports
-    .filter((r) => typeof r.latitude === 'number' && typeof r.longitude === 'number')
+    .filter(
+      (r) => typeof r.latitude === "number" && typeof r.longitude === "number",
+    )
     .map((r) => [r.latitude, r.longitude, 0.6]);
   return (
     <MapContainer
@@ -139,7 +164,7 @@ export const MapView: React.FC<{
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-          <HeatLayer points={points} />
+      <HeatLayer points={points} />
       <HeatCanvasTweaks />
       <MapClickHandler onMapClick={onMapClick} />
 
@@ -149,8 +174,12 @@ export const MapView: React.FC<{
       )}
 
       {/* Geofences */}
-      {( (props as any)?.geofences || [] ).map((f: any) => (
-        <Polygon key={f.id} pathOptions={{ color: '#2563eb', fillOpacity: 0.15 }} positions={f.points.map((p: any) => [p.lat, p.lng])} />
+      {((props as any)?.geofences || []).map((f: any) => (
+        <Polygon
+          key={f.id}
+          pathOptions={{ color: "#2563eb", fillOpacity: 0.15 }}
+          positions={f.points.map((p: any) => [p.lat, p.lng])}
+        />
       ))}
 
       {reports.map((r) => (
@@ -186,51 +215,70 @@ export const MapView: React.FC<{
       ))}
 
       {socialPins
-        .filter(pin => pin && pin.location && typeof pin.location.lat === 'number' && typeof pin.location.lng === 'number')
+        .filter(
+          (pin) =>
+            pin &&
+            pin.location &&
+            typeof pin.location.lat === "number" &&
+            typeof pin.location.lng === "number",
+        )
         .map((pin) => (
-        <Marker
-          key={`social-${pin.id}`}
-          position={[pin.location.lat, pin.location.lng]}
-          icon={L.divIcon({
-            className: 'social-pin',
-            html: `<div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">📱</div>`,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-          })}
-        >
-          <Popup>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">
-                  {pin.platform === 'twitter' ? '🐦' : pin.platform === 'reddit' ? '🔴' : '📱'}
-                </span>
-                <span className="font-semibold text-sm">{pin.user}</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  {pin.platform}
-                </span>
-              </div>
-              <p className="text-sm max-w-[220px]">{pin.text}</p>
-              <div className="flex flex-wrap gap-1">
-                {(pin.keywords || []).map((keyword) => (
-                  <span key={keyword} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                    #{keyword}
+          <Marker
+            key={`social-${pin.id}`}
+            position={[pin.location.lat, pin.location.lng]}
+            icon={L.divIcon({
+              className: "social-pin",
+              html: `<div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">📱</div>`,
+              iconSize: [24, 24],
+              iconAnchor: [12, 12],
+            })}
+          >
+            <Popup>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">
+                    {pin.platform === "twitter"
+                      ? "🐦"
+                      : pin.platform === "reddit"
+                        ? "🔴"
+                        : "📱"}
                   </span>
-                ))}
+                  <span className="font-semibold text-sm">{pin.user}</span>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    {pin.platform}
+                  </span>
+                </div>
+                <p className="text-sm max-w-[220px]">{pin.text}</p>
+                <div className="flex flex-wrap gap-1">
+                  {(pin.keywords || []).map((keyword) => (
+                    <span
+                      key={keyword}
+                      className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+                    >
+                      #{keyword}
+                    </span>
+                  ))}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {pin.createdAt
+                    ? new Date(pin.createdAt).toLocaleString()
+                    : ""}
+                </div>
+                <div
+                  className={`text-xs px-2 py-1 rounded ${
+                    pin.sentiment === "negative"
+                      ? "bg-red-100 text-red-800"
+                      : pin.sentiment === "positive"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  Sentiment: {pin.sentiment || "neutral"}
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                {pin.createdAt ? new Date(pin.createdAt).toLocaleString() : ''}
-              </div>
-              <div className={`text-xs px-2 py-1 rounded ${
-                pin.sentiment === 'negative' ? 'bg-red-100 text-red-800' :
-                pin.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
-                Sentiment: {pin.sentiment || 'neutral'}
-              </div>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+            </Popup>
+          </Marker>
+        ))}
     </MapContainer>
   );
 };

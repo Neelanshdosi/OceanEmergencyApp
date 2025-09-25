@@ -1,12 +1,12 @@
-import React, { useRef, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/button';
-import { AuthDialog } from '@/components/AuthDialog';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { User, LogOut, MapPin, ChevronDown } from 'lucide-react';
-import { useMapContext } from '@/context/MapContext';
-import ReportHazardModal from '@/components/ReportHazardModal';
+import React, { useRef, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { AuthDialog } from "@/components/AuthDialog";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { User, LogOut, MapPin, ChevronDown } from "lucide-react";
+import { useMapContext } from "@/context/MapContext";
+import ReportHazardModal from "@/components/ReportHazardModal";
 
 export const Header: React.FC = () => {
   const { user, logout, loading } = useAuth();
@@ -17,7 +17,7 @@ export const Header: React.FC = () => {
   const [mapMenuOpen, setMapMenuOpen] = useState(false);
   const mapMenuRef = useRef<HTMLDivElement | null>(null);
 
-  const isMapActive = pathname === '/map' || pathname.startsWith('/map');
+  const isMapActive = pathname === "/map" || pathname.startsWith("/map");
 
   const [reportOpen, setReportOpen] = useState(false);
 
@@ -27,17 +27,24 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="h-7 w-7 rounded-md bg-gradient-to-br from-ocean-500 to-teal-400" />
           <div>
-            <Link to="/" className="font-extrabold tracking-tight text-ocean-800 dark:text-ocean-100">
+            <Link
+              to="/"
+              className="font-extrabold tracking-tight text-ocean-800 dark:text-ocean-100"
+            >
               OceanWatch
             </Link>
-            <div className="text-xs text-muted-foreground">India Coastal Safety Monitoring</div>
+            <div className="text-xs text-muted-foreground">
+              India Coastal Safety Monitoring
+            </div>
           </div>
 
           <nav className="ml-6 hidden gap-4 md:flex">
             <Link
               className={cn(
-                'text-sm font-medium',
-                pathname === '/' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                "text-sm font-medium",
+                pathname === "/"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
               to="/"
             >
@@ -45,8 +52,10 @@ export const Header: React.FC = () => {
             </Link>
             <Link
               className={cn(
-                'text-sm font-medium',
-                pathname === '/dashboard' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                "text-sm font-medium",
+                pathname === "/dashboard"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
               to="/dashboard"
             >
@@ -54,27 +63,38 @@ export const Header: React.FC = () => {
             </Link>
             <Link
               className={cn(
-                'text-sm font-medium',
-                pathname === '/analytics' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                "text-sm font-medium",
+                pathname === "/analytics"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
               to="/analytics"
             >
               Analytics
             </Link>
 
-            <div className={'relative'} ref={mapMenuRef}>
-              <div className={cn('inline-flex items-center gap-2 rounded px-2 py-1 cursor-pointer select-none focus:outline-none', isMapActive ? 'bg-muted-foreground/10 underline decoration-2 decoration-transparent' : '')}>
+            <div className={"relative"} ref={mapMenuRef}>
+              <div
+                className={cn(
+                  "inline-flex items-center gap-2 rounded px-2 py-1 cursor-pointer select-none focus:outline-none",
+                  isMapActive
+                    ? "bg-muted-foreground/10 underline decoration-2 decoration-transparent"
+                    : "",
+                )}
+              >
                 <Link
                   to="/map"
                   aria-label="Open Live Map"
                   className={cn(
-                    'text-sm font-medium inline-flex items-center gap-2',
-                    isMapActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                    "text-sm font-medium inline-flex items-center gap-2",
+                    isMapActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   <MapPin className="h-4 w-4" />
                   <span>Live Map</span>
-                  {typeof activeHazardsCount === 'number' && (
+                  {typeof activeHazardsCount === "number" && (
                     <span className="ml-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full bg-red-600 text-white">
                       {activeHazardsCount}
                     </span>
@@ -94,20 +114,45 @@ export const Header: React.FC = () => {
               </div>
 
               {mapMenuOpen && (
-                <div role="menu" className="absolute mt-2 right-0 w-44 rounded-md border bg-card p-2 shadow-lg z-50">
-                  <Link to="/map?panel=filters" className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Filters</Link>
-                  <Link to="/map?panel=subscribe" className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Subscribe to area</Link>
-                  <Link to="/map?panel=draw" className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Draw geofence</Link>
-                  <Link to="/map?panel=export" className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded">Export view</Link>
+                <div
+                  role="menu"
+                  className="absolute mt-2 right-0 w-44 rounded-md border bg-card p-2 shadow-lg z-50"
+                >
+                  <Link
+                    to="/map?panel=filters"
+                    className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded"
+                  >
+                    Filters
+                  </Link>
+                  <Link
+                    to="/map?panel=subscribe"
+                    className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded"
+                  >
+                    Subscribe to area
+                  </Link>
+                  <Link
+                    to="/map?panel=draw"
+                    className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded"
+                  >
+                    Draw geofence
+                  </Link>
+                  <Link
+                    to="/map?panel=export"
+                    className="w-full block text-left px-2 py-1 text-sm hover:bg-muted-foreground/5 rounded"
+                  >
+                    Export view
+                  </Link>
                 </div>
               )}
             </div>
 
-            {user?.role === 'admin' && (
+            {user?.role === "admin" && (
               <Link
                 className={cn(
-                  'text-sm font-medium',
-                  pathname === '/admin' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                  "text-sm font-medium",
+                  pathname === "/admin"
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
                 to="/admin"
               >
@@ -117,7 +162,11 @@ export const Header: React.FC = () => {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="default" size="sm" onClick={() => setReportOpen(true)}>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setReportOpen(true)}
+          >
             Report Hazard
           </Button>
 
@@ -130,7 +179,11 @@ export const Header: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="h-6 w-6 rounded-full" />
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="h-6 w-6 rounded-full"
+                  />
                 ) : (
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-ocean-500 text-white text-xs font-medium">
                     {user.name.charAt(0).toUpperCase()}
@@ -138,7 +191,9 @@ export const Header: React.FC = () => {
                 )}
                 <div className="hidden flex-col sm:flex">
                   <span className="text-sm font-medium">{user.name}</span>
-                  <span className="text-xs text-muted-foreground capitalize">{user.role}</span>
+                  <span className="text-xs text-muted-foreground capitalize">
+                    {user.role}
+                  </span>
                 </div>
               </div>
               <Button variant="outline" size="sm" onClick={logout}>

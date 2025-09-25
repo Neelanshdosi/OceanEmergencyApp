@@ -70,14 +70,35 @@ export const listSocial: RequestHandler = (req, res) => {
         createdAt: new Date(now - i * 60_000).toISOString(),
         user: i % 2 === 0 ? "@coastwatch" : "u/seaScope",
         // Choose an India-based location for some posts
-        location: i % 3 === 0 ? [
-          { lat: 19.0760 + Math.random() * 0.05, lng: 72.8777 + Math.random() * 0.05 }, // Mumbai
-          { lat: 13.0827 + Math.random() * 0.05, lng: 80.2707 + Math.random() * 0.05 }, // Chennai
-          { lat: 15.2993 + Math.random() * 0.05, lng: 74.1240 + Math.random() * 0.05 }, // Goa
-          { lat: 19.8135 + Math.random() * 0.05, lng: 85.8312 + Math.random() * 0.05 }, // Puri
-          { lat: 8.5241 + Math.random() * 0.05, lng: 76.9366 + Math.random() * 0.05 }, // Kovalam
-          { lat: 11.7401 + Math.random() * 0.05, lng: 92.6586 + Math.random() * 0.05 }, // Andaman
-        ][Math.floor(Math.random()*6)] : null,
+        location:
+          i % 3 === 0
+            ? [
+                {
+                  lat: 19.076 + Math.random() * 0.05,
+                  lng: 72.8777 + Math.random() * 0.05,
+                }, // Mumbai
+                {
+                  lat: 13.0827 + Math.random() * 0.05,
+                  lng: 80.2707 + Math.random() * 0.05,
+                }, // Chennai
+                {
+                  lat: 15.2993 + Math.random() * 0.05,
+                  lng: 74.124 + Math.random() * 0.05,
+                }, // Goa
+                {
+                  lat: 19.8135 + Math.random() * 0.05,
+                  lng: 85.8312 + Math.random() * 0.05,
+                }, // Puri
+                {
+                  lat: 8.5241 + Math.random() * 0.05,
+                  lng: 76.9366 + Math.random() * 0.05,
+                }, // Kovalam
+                {
+                  lat: 11.7401 + Math.random() * 0.05,
+                  lng: 92.6586 + Math.random() * 0.05,
+                }, // Andaman
+              ][Math.floor(Math.random() * 6)]
+            : null,
         keywords,
         sentiment,
       } satisfies SocialPost;
@@ -85,10 +106,13 @@ export const listSocial: RequestHandler = (req, res) => {
     .filter((p) => {
       if (!q) return true;
       // Support OR syntax and multiple keywords: split by OR, commas, semicolons or whitespace
-      const tokens = q.split(/\s+(?:OR|or)\s+|[,;]+|\s+/).map(t => t.trim()).filter(Boolean);
+      const tokens = q
+        .split(/\s+(?:OR|or)\s+|[,;]+|\s+/)
+        .map((t) => t.trim())
+        .filter(Boolean);
       const lower = p.text.toLowerCase();
       // Match if any token is present in the post text
-      return tokens.some(token => lower.includes(token.toLowerCase()));
+      return tokens.some((token) => lower.includes(token.toLowerCase()));
     });
 
   const response: SocialResponse = { items };

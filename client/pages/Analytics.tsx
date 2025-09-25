@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import MetricCard from '@/components/ui/MetricCard';
-import { sampleReports } from '@/lib/mockData';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from "react";
+import MetricCard from "@/components/ui/MetricCard";
+import { sampleReports } from "@/lib/mockData";
+import { Button } from "@/components/ui/button";
 
 const Analytics: React.FC = () => {
   const [reports] = useState(sampleReports);
@@ -12,19 +12,23 @@ const Analytics: React.FC = () => {
   }, []);
 
   const totalReports = reports.length;
-  const activeReports = reports.filter(r => !r.verified).length;
-  const resolvedReports = reports.filter(r => r.verified).length;
-  const avgResponse = '12m';
+  const activeReports = reports.filter((r) => !r.verified).length;
+  const resolvedReports = reports.filter((r) => r.verified).length;
+  const avgResponse = "12m";
 
   return (
     <div className="min-h-[80vh]">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Analytics</h1>
-          <p className="text-sm text-muted-foreground">Visualize trends and response metrics.</p>
+          <p className="text-sm text-muted-foreground">
+            Visualize trends and response metrics.
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">Export CSV</Button>
+          <Button variant="outline" size="sm">
+            Export CSV
+          </Button>
         </div>
       </div>
 
@@ -39,7 +43,9 @@ const Analytics: React.FC = () => {
         <div className="md:col-span-2 rounded-lg border bg-card p-4">
           <h3 className="mb-3 text-lg font-semibold">Reports Over Time</h3>
           {/* LineChart component placeholder - will display reports count per time interval */}
-          <div className="h-56 w-full rounded border border-dashed flex items-center justify-center text-muted-foreground">LineChart Placeholder</div>
+          <div className="h-56 w-full rounded border border-dashed flex items-center justify-center text-muted-foreground">
+            LineChart Placeholder
+          </div>
         </div>
 
         <div className="rounded-lg border bg-card p-4">
@@ -74,13 +80,17 @@ const Analytics: React.FC = () => {
         <div className="rounded-lg border bg-card p-4">
           <h3 className="mb-3 text-lg font-semibold">Reports by Hazard Type</h3>
           {/* PieChart placeholder */}
-          <div className="h-48 w-full rounded border border-dashed flex items-center justify-center text-muted-foreground">PieChart Placeholder</div>
+          <div className="h-48 w-full rounded border border-dashed flex items-center justify-center text-muted-foreground">
+            PieChart Placeholder
+          </div>
         </div>
 
         <div className="rounded-lg border bg-card p-4">
           <h3 className="mb-3 text-lg font-semibold">Reports by Severity</h3>
           {/* BarChart placeholder */}
-          <div className="h-48 w-full rounded border border-dashed flex items-center justify-center text-muted-foreground">BarChart Placeholder</div>
+          <div className="h-48 w-full rounded border border-dashed flex items-center justify-center text-muted-foreground">
+            BarChart Placeholder
+          </div>
         </div>
       </div>
     </div>

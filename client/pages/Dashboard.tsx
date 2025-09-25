@@ -1,6 +1,6 @@
 import type { Report, SocialMediaPin } from "@shared/api";
 import type { Report, SocialMediaPin } from "@shared/api";
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from "react";
 import { MapView } from "@/components/MapView";
 import { Filters, FiltersPanel } from "@/components/FiltersPanel";
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,8 @@ export default function Dashboard() {
   }, [filters.type, filters.source, filters.verified]);
 
   async function verify(id: string) {
-    if (!user || user.role !== "analyst") return alert("Only analysts can verify");
+    if (!user || user.role !== "analyst")
+      return alert("Only analysts can verify");
     const res = await fetch(`/api/reports/${id}/verify`, {
       method: "PATCH",
       headers: { "x-user-role": user.role },
@@ -77,7 +78,9 @@ export default function Dashboard() {
     <main className="container min-h-[calc(100vh-56px)] py-6">
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Overview of recent hazards and actions.</p>
+        <p className="text-sm text-muted-foreground">
+          Overview of recent hazards and actions.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -104,21 +107,31 @@ export default function Dashboard() {
           <div className="rounded-lg border bg-card p-4">
             <h3 className="mb-3 text-lg font-semibold">Recent Alerts</h3>
             <div className="space-y-2">
-              {(safeReports).map((r) => (
-                <div key={r.id} className="flex items-start justify-between gap-2 rounded-lg border p-2">
+              {safeReports.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-start justify-between gap-2 rounded-lg border p-2"
+                >
                   <div>
                     <div className="text-sm font-medium">{r.title}</div>
                     <div className="text-xs text-muted-foreground">
-                      {r.type} • {new Date(r.timestamp).toLocaleString()} • {r.source}
+                      {r.type} • {new Date(r.timestamp).toLocaleString()} •{" "}
+                      {r.source}
                     </div>
                     <p className="text-sm mt-1 max-w-[40ch]">{r.description}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`rounded px-2 py-0.5 text-xs ${r.verified ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200'}`}>
-                      {r.verified ? 'Verified' : 'Unverified'}
+                    <span
+                      className={`rounded px-2 py-0.5 text-xs ${r.verified ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200" : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200"}`}
+                    >
+                      {r.verified ? "Verified" : "Unverified"}
                     </span>
                     {!r.verified && (
-                      <Button size="sm" onClick={() => verify(r.id)} disabled={!user || user.role !== 'analyst'}>
+                      <Button
+                        size="sm"
+                        onClick={() => verify(r.id)}
+                        disabled={!user || user.role !== "analyst"}
+                      >
                         Verify
                       </Button>
                     )}
@@ -133,28 +146,40 @@ export default function Dashboard() {
           <div className="rounded-lg border bg-card p-4">
             <h3 className="mb-3 text-lg font-semibold">Quick Actions</h3>
             <div className="flex flex-col gap-2">
-              <a href="#" className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5">
+              <a
+                href="#"
+                className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5"
+              >
                 <div className="flex items-center gap-3">
                   <div className="rounded-md bg-muted-foreground/5 p-2">+</div>
                   <div className="text-sm font-medium">Report New Hazard</div>
                 </div>
                 <div className="text-xs text-muted-foreground">›</div>
               </a>
-              <a href="/map" className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5">
+              <a
+                href="/map"
+                className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5"
+              >
                 <div className="flex items-center gap-3">
                   <div className="rounded-md bg-muted-foreground/5 p-2">📍</div>
                   <div className="text-sm font-medium">View Live Map</div>
                 </div>
                 <div className="text-xs text-muted-foreground">›</div>
               </a>
-              <a href="#" className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5">
+              <a
+                href="#"
+                className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5"
+              >
                 <div className="flex items-center gap-3">
                   <div className="rounded-md bg-muted-foreground/5 p-2">📞</div>
                   <div className="text-sm font-medium">Emergency Call</div>
                 </div>
                 <div className="text-xs text-muted-foreground">›</div>
               </a>
-              <a href="#" className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5">
+              <a
+                href="#"
+                className="flex items-center justify-between rounded px-3 py-2 hover:bg-muted-foreground/5"
+              >
                 <div className="flex items-center gap-3">
                   <div className="rounded-md bg-muted-foreground/5 p-2">⬇️</div>
                   <div className="text-sm font-medium">Export Reports</div>
@@ -170,9 +195,13 @@ export default function Dashboard() {
         <div className="flex items-center justify-between p-3">
           <div>
             <h3 className="text-lg font-semibold">Map & Hotspots</h3>
-            <p className="text-xs text-muted-foreground">Use filters to refine. Click markers for details.</p>
+            <p className="text-xs text-muted-foreground">
+              Use filters to refine. Click markers for details.
+            </p>
           </div>
-          <Button variant="outline" size="sm" onClick={load}>Refresh</Button>
+          <Button variant="outline" size="sm" onClick={load}>
+            Refresh
+          </Button>
         </div>
         <div className="h-[60vh] w-full">
           <MapView reports={reports} socialPins={socialPins} center={center} />
